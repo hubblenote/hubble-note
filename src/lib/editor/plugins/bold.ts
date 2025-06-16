@@ -3,24 +3,24 @@ import { Decoration, DecorationSet } from "prosemirror-view";
 import { keymap } from "prosemirror-keymap";
 
 // Command to toggle bold marks around selected text
-const toggleBoldCommand = (state: EditorState, dispatch?: (tr: Transaction) => void) => {
+export const toggleBoldCommand = (state: EditorState, dispatch?: (tr: Transaction) => void) => {
   const { from, to } = state.selection;
-  
+
   if (from === to) {
     // No selection, do nothing for now
     return false;
   }
-  
+
   const selectedText = state.doc.textBetween(from, to);
-  
+
   // Check if the selection is already wrapped with **
   const startPos = Math.max(0, from - 2);
   const endPos = Math.min(state.doc.content.size, to + 2);
   const surroundingText = state.doc.textBetween(startPos, endPos);
-  
+
   const beforeSelection = surroundingText.substring(0, from - startPos);
   const afterSelection = surroundingText.substring(from - startPos + selectedText.length);
-  
+
   if (beforeSelection.endsWith('**') && afterSelection.startsWith('**')) {
     // Remove outer bold marks
     if (dispatch) {
@@ -35,12 +35,12 @@ const toggleBoldCommand = (state: EditorState, dispatch?: (tr: Transaction) => v
     if (dispatch) {
       // Remove any ** within the selected text
       const cleanedText = selectedText.replace(/\*\*/g, '');
-      
+
       const tr = state.tr
         .replaceWith(from, to, state.schema.text(cleanedText)) // Replace selection with cleaned text
         .insertText('**', from + cleanedText.length) // Add trailing **
         .insertText('**', from); // Add leading **
-      
+
       dispatch(tr);
     }
     return true;

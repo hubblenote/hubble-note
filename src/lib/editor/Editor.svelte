@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { Schema } from 'prosemirror-model';
 	import { EditorState, TextSelection } from 'prosemirror-state';
 	import { EditorView } from 'prosemirror-view';
 	import { boldPlugin, boldKeymapPlugin } from './plugins/bold';
 	import 'prosemirror-view/style/prosemirror.css';
 	import { keymap } from 'prosemirror-keymap';
 	import { baseKeymap } from 'prosemirror-commands';
+	import { schema } from './schema';
 
 	let editor = $state<HTMLDivElement>();
 
@@ -13,25 +13,6 @@
 
 	$effect(() => {
 		if (!editor) return;
-
-		const schema = new Schema({
-			nodes: {
-				doc: {
-					content: 'block+',
-				},
-				paragraph: {
-					content: 'inline*',
-					group: 'block',
-					parseDOM: [{ tag: 'p' }],
-					toDOM() {
-						return ['p', 0];
-					},
-				},
-				text: {
-					group: 'inline',
-				},
-			},
-		});
 
 		const view = new EditorView(editor, {
 			state: EditorState.create({
