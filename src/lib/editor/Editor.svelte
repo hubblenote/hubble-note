@@ -2,8 +2,10 @@
 	import { Schema } from 'prosemirror-model';
 	import { EditorState, TextSelection } from 'prosemirror-state';
 	import { EditorView } from 'prosemirror-view';
-	import { markdownBoldPlugin } from './plugins/bold';
+	import { boldPlugin } from './plugins/bold';
 	import 'prosemirror-view/style/prosemirror.css';
+	import { keymap } from 'prosemirror-keymap';
+	import { baseKeymap } from 'prosemirror-commands';
 
 	let editor = $state<HTMLDivElement>();
 
@@ -31,26 +33,24 @@
 			},
 		});
 
-	const view = new EditorView(editor, {
-		state: EditorState.create({
-			doc: schema.node('doc', null, [
-				schema.node('paragraph', null, [schema.text('This should be **bold** text')]),
-			]),
-			schema,
-			plugins: [markdownBoldPlugin],
-		}),
-	});
-	
-	// Autofocus the editor and position cursor at end
-	setTimeout(() => {
-		const doc = view.state.doc;
-		const endPos = doc.content.size;
-		const tr = view.state.tr.setSelection(
-			TextSelection.create(doc, endPos)
-		);
-		view.dispatch(tr);
-		view.focus();
-	}, 0);
+		const view = new EditorView(editor, {
+			state: EditorState.create({
+				doc: schema.node('doc', null, [
+					schema.node('paragraph', null, [schema.text('This should be **bold** text')]),
+				]),
+				schema,
+				plugins: [boldPlugin, keymap(baseKeymap)],
+			}),
+		});
+
+		// Autofocus the editor and position cursor at end
+		setTimeout(() => {
+			const doc = view.state.doc;
+			const endPos = doc.content.size;
+			const tr = view.state.tr.setSelection(TextSelection.create(doc, endPos));
+			view.dispatch(tr);
+			view.focus();
+		}, 0);
 	});
 </script>
 

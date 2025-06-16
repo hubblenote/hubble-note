@@ -1,7 +1,7 @@
 import { Plugin } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 
-export const markdownBoldPlugin = new Plugin({
+export const boldPlugin = new Plugin({
   state: {
     init() {
       return DecorationSet.empty;
