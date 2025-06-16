@@ -2,7 +2,7 @@
 	import { Schema } from 'prosemirror-model';
 	import { EditorState, TextSelection } from 'prosemirror-state';
 	import { EditorView } from 'prosemirror-view';
-	import { boldPlugin } from './plugins/bold';
+	import { boldPlugin, boldKeymapPlugin } from './plugins/bold';
 	import 'prosemirror-view/style/prosemirror.css';
 	import { keymap } from 'prosemirror-keymap';
 	import { baseKeymap } from 'prosemirror-commands';
@@ -39,7 +39,7 @@
 					schema.node('paragraph', null, [schema.text('This should be **bold** text')]),
 				]),
 				schema,
-				plugins: [boldPlugin, keymap(baseKeymap)],
+				plugins: [boldPlugin, boldKeymapPlugin, keymap(baseKeymap)],
 			}),
 		});
 
