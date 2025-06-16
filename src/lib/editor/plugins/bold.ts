@@ -12,35 +12,106 @@ export const toggleBoldCommand = (state: EditorState, dispatch?: (tr: Transactio
   }
 
   const selectedText = state.doc.textBetween(from, to);
-
-  // Check if the selection is already wrapped with **
-  const startPos = Math.max(0, from - 2);
-  const endPos = Math.min(state.doc.content.size, to + 2);
-  const surroundingText = state.doc.textBetween(startPos, endPos);
-
-  const beforeSelection = surroundingText.substring(0, from - startPos);
-  const afterSelection = surroundingText.substring(from - startPos + selectedText.length);
-
-  if (beforeSelection.endsWith('**') && afterSelection.startsWith('**')) {
-    // Remove outer bold marks
+  
+  // Check if selection includes ** markers
+  const selectionHasMarkers = selectedText.includes('**');
+  
+  // Check if selection is entirely within a single bold block (not touching the markers)
+  // Use textBetween to get text around the selection with correct position mapping
+  const beforeText = state.doc.textBetween(Math.max(1, from - 2), from); // Start at 1 to avoid the doc boundary
+  const afterText = state.doc.textBetween(to, Math.min(state.doc.content.size - 1, to + 2));
+  const surroundedByMarkers = beforeText.endsWith('**') && afterText.startsWith('**') && !selectionHasMarkers;
+  
+  if (surroundedByMarkers) {
+    // Case 1: Selection is inside a bold block - remove the surrounding ** markers
     if (dispatch) {
       const tr = state.tr
-        .delete(to, to + 2) // Remove trailing **
+        .delete(to, to + 2)     // Remove trailing **
         .delete(from - 2, from); // Remove leading **
       dispatch(tr);
     }
     return true;
+  } else if (selectionHasMarkers) {
+    // Case 2: Selection contains ** markers - could be removing or consolidating
+    
+    // Check if we need to extend the selection to include partial ** markers or nearby bold blocks
+    let extendedFrom = from;
+    let extendedTo = to;
+    
+    // Check if selection starts in the middle of a ** marker or right before one
+    const beforeSelectionText = state.doc.textBetween(Math.max(1, from - 2), from);
+    if (beforeSelectionText.endsWith('*') && selectedText.startsWith('*')) {
+      // Selection starts at the second * of a ** marker
+      extendedFrom = from - 1;
+    }
+    
+    // Check if selection ends in the middle of a ** marker
+    const afterSelectionText = state.doc.textBetween(to, Math.min(state.doc.content.size - 1, to + 2));
+    if (selectedText.endsWith('*') && afterSelectionText.startsWith('*')) {
+      // Selection ends at the first * of a ** marker
+      extendedTo = to + 1;
+    }
+    
+    // Also check if selection ends right before a ** marker and we should extend to include it
+    if (afterSelectionText.startsWith('**')) {
+      extendedTo = to + 2;
+    }
+    
+    // Get the full text including any extended parts
+    const fullSelectedText = state.doc.textBetween(extendedFrom, extendedTo);
+    
+    // Handle leading and trailing spaces specially
+    let leadingSpaces = '';
+    let trailingSpaces = '';
+    let contentText = fullSelectedText;
+    
+    // Extract leading spaces
+    const leadingSpaceMatch = contentText.match(/^(\s+)/);
+    if (leadingSpaceMatch) {
+      leadingSpaces = leadingSpaceMatch[1];
+      contentText = contentText.slice(leadingSpaces.length);
+    }
+    
+    // Extract trailing spaces
+    const trailingSpaceMatch = contentText.match(/(\s+)$/);
+    if (trailingSpaceMatch) {
+      trailingSpaces = trailingSpaceMatch[1];
+      contentText = contentText.slice(0, -trailingSpaces.length);
+    }
+    
+    // Clean up ** markers from the content
+    const cleanedText = contentText.replace(/\*\*/g, '');
+    
+    // If the cleaned text is empty, don't add bold markers
+    if (cleanedText.trim() === '') {
+      if (dispatch) {
+        const tr = state.tr.replaceWith(extendedFrom, extendedTo, state.schema.text(`${leadingSpaces}${cleanedText}${trailingSpaces}`));
+        dispatch(tr);
+      }
+      return true;
+    }
+    
+    // If the content starts and ends with **, just remove them
+    if (contentText.startsWith('**') && contentText.endsWith('**') && 
+        contentText.split('**').length === 3) {
+      // Simple case: "**text**" selected
+      if (dispatch) {
+        const tr = state.tr.replaceWith(extendedFrom, extendedTo, state.schema.text(`${leadingSpaces}${cleanedText}${trailingSpaces}`));
+        dispatch(tr);
+      }
+      return true;
+    } else {
+      // Complex case: multiple ** markers or partial selection - consolidate into one bold block
+      if (dispatch) {
+        const tr = state.tr.replaceWith(extendedFrom, extendedTo, state.schema.text(`${leadingSpaces}**${cleanedText}**${trailingSpaces}`));
+        dispatch(tr);
+      }
+      return true;
+    }
   } else {
-    // Add bold marks, but first clean up any ** within the selection
+    // Case 3: No ** markers in selection - add bold marks
     if (dispatch) {
-      // Remove any ** within the selected text
-      const cleanedText = selectedText.replace(/\*\*/g, '');
-
-      const tr = state.tr
-        .replaceWith(from, to, state.schema.text(cleanedText)) // Replace selection with cleaned text
-        .insertText('**', from + cleanedText.length) // Add trailing **
-        .insertText('**', from); // Add leading **
-
+      const tr = state.tr.replaceWith(from, to, state.schema.text(`**${selectedText}**`));
       dispatch(tr);
     }
     return true;

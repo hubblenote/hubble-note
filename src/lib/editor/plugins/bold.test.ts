@@ -79,4 +79,18 @@ describe('toggleBoldCommand', () => {
     expect(success).toBe(true);
     expect(resultText).toBe('Start **bold middle more** end');
   });
+
+  it('should handle selections in the middle of a ** end marker', () => {
+    const { success, resultText } = executeCommand('Start **bold** middle **more** end', 6, 29);
+
+    expect(success).toBe(true);
+    expect(resultText).toBe('Start **bold middle more** end');
+  })
+
+  it('should handle selections in the middle of a ** start marker', () => {
+    const { success, resultText } = executeCommand('Start **bold** middle **more** end', 5, 28);
+
+    expect(success).toBe(true);
+    expect(resultText).toBe('Start **bold middle more** end');
+  })
 });
