@@ -1,96 +1,105 @@
 import { describe, it, expect } from 'vitest';
 import { EditorState, TextSelection } from 'prosemirror-state';
-import { toggleBoldCommand } from './bold';
+import { boldPlugin, toggleBoldCommand } from './bold';
 import { schema } from '../schema';
 
 // Helper function to create editor state with given text and selection
 function createState(text: string, from: number, to: number) {
-  const doc = schema.node('doc', null, [
-    schema.node('paragraph', null, [schema.text(text)])
-  ]);
-
-  const state = EditorState.create({
-    doc,
-    selection: TextSelection.create(doc, from + 1, to + 1) // +1 to account for paragraph wrapper
+  let state = EditorState.create({
+    doc: schema.node('doc', null, [
+      schema.node('paragraph', null, [])
+    ]),
+    plugins: [boldPlugin],
   });
 
-  return state;
+  state = state.apply(state.tr.insertText(text));
+  return state.apply(state.tr.setSelection(TextSelection.create(state.doc, from + 1, to + 1)));
 }
 
 // Helper function to execute command and return the result text
 function executeCommand(text: string, from: number, to: number) {
   const state = createState(text, from, to);
-  let resultText = text;
+  let newState = state;
+  let success = false;
 
-  const success = toggleBoldCommand(state, (tr) => {
-    const newState = state.apply(tr);
-    resultText = newState.doc.textContent;
+  // Execute the command and get the new state
+  success = toggleBoldCommand(state, (tr) => {
+    newState = state.apply(tr);
   });
+
+  const resultText = newState.doc.textContent;
 
   return { success, resultText };
 }
 
 describe('toggleBoldCommand', () => {
-  it('should wrap selected text with ** when not already bold', () => {
-    const { success, resultText } = executeCommand('Hello world', 0, 5);
+  it('should handle selection around bolded text', () => {
+    const { success, resultText } = executeCommand('**This** is some example text', 0, 8);
 
     expect(success).toBe(true);
-    expect(resultText).toBe('**Hello** world');
+    expect(resultText).toBe('This is some example text');
   });
 
-  it('should remove ** when text is already wrapped', () => {
-    const { success, resultText } = executeCommand('**Hello** world', 2, 7);
+  it('should handle selection around unbolded text', () => {
+    const { success, resultText } = executeCommand('This is some example text', 0, 4);
 
     expect(success).toBe(true);
-    expect(resultText).toBe('Hello world');
+    expect(resultText).toBe('**This** is some example text');
   });
 
-  it('should clean up nested ** within selection', () => {
-    const { success, resultText } = executeCommand('This is **bold** text', 0, 22);
+  it('should handle selection within bolded text', () => {
+    const { success, resultText } = executeCommand('**This is some** example text', 7, 9);
 
     expect(success).toBe(true);
-    expect(resultText).toBe('**This is bold text**');
+    expect(resultText).toBe('**This** is **some** example text');
   });
 
-  it('should handle multiple ** pairs within selection', () => {
-    const { success, resultText } = executeCommand('**Hello** and **world**', 0, 24);
+  it('should handle selection within starting marker', () => {
+    const { success, resultText } = executeCommand('**This** is some example text', 1, 8);
 
     expect(success).toBe(true);
-    expect(resultText).toBe('**Hello and world**');
+    expect(resultText).toBe('This is some example text');
   });
 
-  it('should handle selection that includes ** markers', () => {
-    const { success, resultText } = executeCommand('**Hello** world', 0, 9);
+  it('should handle selection within ending marker', () => {
+    const { success, resultText } = executeCommand('**This** is some example text', 0, 7);
 
     expect(success).toBe(true);
-    expect(resultText).toBe('Hello world');
+    expect(resultText).toBe('This is some example text');
   });
 
-  it('should preserve single * characters within selected text', () => {
-    const { success, resultText } = executeCommand('Hello*world*test', 0, 16);
+  it('should handle selection in the middle of a word', () => {
+    const { success, resultText } = executeCommand('**This** is some example text', 4, 8);
 
     expect(success).toBe(true);
-    expect(resultText).toBe('**Hello*world*test**');
+    expect(resultText).toBe('This is some example text');
   });
 
-  it('should handle selections that stop before the ** markers', () => {
-    const { success, resultText } = executeCommand('Start **bold** middle **more** end', 6, 28);
+  it('should handle selection from bolded to unbolded text', () => {
+    const { success, resultText } = executeCommand('**This** is some example text', 0, 11);
 
     expect(success).toBe(true);
-    expect(resultText).toBe('Start **bold middle more** end');
+    expect(resultText).toBe('**This is** some example text');
   });
 
-  it('should handle selections in the middle of a ** end marker', () => {
-    const { success, resultText } = executeCommand('Start **bold** middle **more** end', 6, 29);
+  it('should handle selection from unbolded to bolded text', () => {
+    const { success, resultText } = executeCommand('This is some **example text**', 9, 29);
 
     expect(success).toBe(true);
-    expect(resultText).toBe('Start **bold middle more** end');
-  })
+    expect(resultText).toBe('This is **some example text**');
+  });
 
-  it('should handle selections in the middle of a ** start marker', () => {
-    const { success, resultText } = executeCommand('Start **bold** middle **more** end', 5, 28);
+  it('should handle selection from bolded to unbolded text, mid-word', () => {
+    const { success, resultText } = executeCommand('**This** is some example text', 3, 11);
 
     expect(success).toBe(true);
-    expect(resultText).toBe('Start **bold middle more** end');
-  })
+    expect(resultText).toBe('**This is** some example text');
+  });
+
+  it('should handle selection from unbolded to bolded text, mid-word', () => {
+    const { success, resultText } = executeCommand('This is some **example text**', 11, 29);
+
+    expect(success).toBe(true);
+    expect(resultText).toBe('This is **some example text**');
+  });
 });
