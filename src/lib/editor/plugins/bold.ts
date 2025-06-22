@@ -2,121 +2,111 @@ import { Plugin, EditorState, Transaction } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 import { keymap } from "prosemirror-keymap";
 
+type BoldDecorationSpec = {
+  type: 'marker' | 'text';
+}
+
 // Command to toggle bold marks around selected text
 export const toggleBoldCommand = (state: EditorState, dispatch?: (tr: Transaction) => void) => {
-  const { from, to } = state.selection;
+  const decorations = boldPlugin.getState(state);
+  if (!decorations) return false;
+  if (!dispatch) return true;
 
-  if (from === to) {
-    // No selection, do nothing for now
-    return false;
+  const { selection } = state;
+  const fromOffset = getStartOfWordOffset(state.doc.resolve(selection.from).nodeBefore?.textContent ?? '');
+  const toOffset = getEndOfWordOffset(state.doc.resolve(selection.to).nodeAfter?.textContent ?? '');
+  const from = selection.from - fromOffset;
+  const to = selection.to + toOffset;
+
+  const boldDecorations = decorations.find(from, to, (spec: BoldDecorationSpec) => spec.type === 'text');
+  const markerDecorations = decorations.find(from, to, (spec: BoldDecorationSpec) => spec.type === 'marker');
+
+  let tr = state.tr;
+
+  const shouldBecomeBold = checkShouldBecomeBold(from, to, boldDecorations);
+  if (shouldBecomeBold) {
+    for (let decoration of markerDecorations) {
+      if (from === decoration.from || to === decoration.to) continue;
+      tr = tr.delete(tr.mapping.map(decoration.from), tr.mapping.map(decoration.to));
+    }
+    const firstMarker = boldDecorations[0];
+    const lastMarker = boldDecorations.at(-1);
+    console.log(from, to, firstMarker, lastMarker)
+    const isBoldAtStart = firstMarker && from >= firstMarker.from;
+    const isBoldAtEnd = lastMarker && to <= lastMarker.to;
+    if (!isBoldAtStart) {
+      tr = tr.insertText('**', tr.mapping.map(from));
+    }
+    if (!isBoldAtEnd) {
+      tr = tr.insertText('**', tr.mapping.map(to));
+    }
   }
 
-  const selectedText = state.doc.textBetween(from, to);
-  
-  // Check if selection includes ** markers
-  const selectionHasMarkers = selectedText.includes('**');
-  
-  // Check if selection is entirely within a single bold block (not touching the markers)
-  // Use textBetween to get text around the selection with correct position mapping
-  const beforeText = state.doc.textBetween(Math.max(1, from - 2), from); // Start at 1 to avoid the doc boundary
-  const afterText = state.doc.textBetween(to, Math.min(state.doc.content.size - 1, to + 2));
-  const surroundedByMarkers = beforeText.endsWith('**') && afterText.startsWith('**') && !selectionHasMarkers;
-  
-  if (surroundedByMarkers) {
-    // Case 1: Selection is inside a bold block - remove the surrounding ** markers
-    if (dispatch) {
-      const tr = state.tr
-        .delete(to, to + 2)     // Remove trailing **
-        .delete(from - 2, from); // Remove leading **
-      dispatch(tr);
-    }
-    return true;
-  } else if (selectionHasMarkers) {
-    // Case 2: Selection contains ** markers - could be removing or consolidating
-    
-    // Check if we need to extend the selection to include partial ** markers or nearby bold blocks
-    let extendedFrom = from;
-    let extendedTo = to;
-    
-    // Check if selection starts in the middle of a ** marker or right before one
-    const beforeSelectionText = state.doc.textBetween(Math.max(1, from - 2), from);
-    if (beforeSelectionText.endsWith('*') && selectedText.startsWith('*')) {
-      // Selection starts at the second * of a ** marker
-      extendedFrom = from - 1;
-    }
-    
-    // Check if selection ends in the middle of a ** marker
-    const afterSelectionText = state.doc.textBetween(to, Math.min(state.doc.content.size - 1, to + 2));
-    if (selectedText.endsWith('*') && afterSelectionText.startsWith('*')) {
-      // Selection ends at the first * of a ** marker
-      extendedTo = to + 1;
-    }
-    
-    // Also check if selection ends right before a ** marker and we should extend to include it
-    if (afterSelectionText.startsWith('**')) {
-      extendedTo = to + 2;
-    }
-    
-    // Get the full text including any extended parts
-    const fullSelectedText = state.doc.textBetween(extendedFrom, extendedTo);
-    
-    // Handle leading and trailing spaces specially
-    let leadingSpaces = '';
-    let trailingSpaces = '';
-    let contentText = fullSelectedText;
-    
-    // Extract leading spaces
-    const leadingSpaceMatch = contentText.match(/^(\s+)/);
-    if (leadingSpaceMatch) {
-      leadingSpaces = leadingSpaceMatch[1];
-      contentText = contentText.slice(leadingSpaces.length);
-    }
-    
-    // Extract trailing spaces
-    const trailingSpaceMatch = contentText.match(/(\s+)$/);
-    if (trailingSpaceMatch) {
-      trailingSpaces = trailingSpaceMatch[1];
-      contentText = contentText.slice(0, -trailingSpaces.length);
-    }
-    
-    // Clean up ** markers from the content
-    const cleanedText = contentText.replace(/\*\*/g, '');
-    
-    // If the cleaned text is empty, don't add bold markers
-    if (cleanedText.trim() === '') {
-      if (dispatch) {
-        const tr = state.tr.replaceWith(extendedFrom, extendedTo, state.schema.text(`${leadingSpaces}${cleanedText}${trailingSpaces}`));
-        dispatch(tr);
-      }
-      return true;
-    }
-    
-    // If the content starts and ends with **, just remove them
-    if (contentText.startsWith('**') && contentText.endsWith('**') && 
-        contentText.split('**').length === 3) {
-      // Simple case: "**text**" selected
-      if (dispatch) {
-        const tr = state.tr.replaceWith(extendedFrom, extendedTo, state.schema.text(`${leadingSpaces}${cleanedText}${trailingSpaces}`));
-        dispatch(tr);
-      }
-      return true;
-    } else {
-      // Complex case: multiple ** markers or partial selection - consolidate into one bold block
-      if (dispatch) {
-        const tr = state.tr.replaceWith(extendedFrom, extendedTo, state.schema.text(`${leadingSpaces}**${cleanedText}**${trailingSpaces}`));
-        dispatch(tr);
-      }
-      return true;
-    }
-  } else {
-    // Case 3: No ** markers in selection - add bold marks
-    if (dispatch) {
-      const tr = state.tr.replaceWith(from, to, state.schema.text(`**${selectedText}**`));
-      dispatch(tr);
-    }
-    return true;
-  }
+  dispatch(tr);
+
+  return true;
 };
+
+function checkShouldBecomeBold(from: number, to: number, boldDecorations: Decoration[]): boolean {
+  const boldStart = boldDecorations[0]?.from;
+  const boldEnd = boldDecorations.at(-1)?.to;
+  console.log(boldStart, boldEnd)
+  if (!boldStart || !boldEnd) return true;
+  if (from < boldStart || to > boldEnd) return true;
+
+  // Otherwise, looks for breaks in bold in the middle of the text
+  let prevDecoration = boldDecorations[0];
+  for (let decoration of boldDecorations) {
+    if (decoration == prevDecoration) continue;
+    if (!prevDecoration) return true;
+    if (prevDecoration.to < decoration.from) return true;
+    prevDecoration = decoration;
+  }
+  return false;
+}
+
+function getStartOfWordOffset(text: string): number {
+  let offset = text.length - 1;
+  while (offset >= 0 && text[offset] !== ' ') {
+    offset--;
+  }
+  return text.length - 1 - offset;
+}
+
+function getEndOfWordOffset(text: string): number {
+  let offset = 0;
+  while (offset < text.length - 1 && text[offset] !== ' ') {
+    offset++;
+  }
+  return offset;
+}
+
+function getOffsetInParent(state: EditorState, pos: number): number {
+  const resolved = state.doc.resolve(pos);
+  return resolved.parentOffset;
+}
+
+/** Get offset of the start of the selected bold range, accounting for ** characters */
+function getBoldedOffsetStart(selectedText: string): number {
+  if (selectedText[0] === '*' && selectedText[1] === '*') {
+    return 2;
+  } else if (selectedText[0] === '*') {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+/** Get offset of the end of the selected bold range, accounting for ** characters */
+function getBoldedOffsetEnd(selectedText: string): number {
+  if (selectedText.at(-2) === '*' && selectedText.at(-1) === '*') {
+    return -2;
+  } else if (selectedText.at(-1) === '*') {
+    return -1;
+  } else {
+    return 0;
+  }
+}
 
 export const boldPlugin = new Plugin({
   state: {
@@ -161,21 +151,21 @@ function findBoldDecorations(doc: any) {
 
         // Make the inner text bold with strong tag
         decorations.push(
-          Decoration.inline(innerStart, innerEnd, {
+          Decoration.inline(start, end, {
             nodeName: 'strong',
-          })
+          }, { type: 'text' })
         );
 
         // Make the ** symbols slightly dimmed
         decorations.push(
-          Decoration.inline(start, start + 2, {
+          Decoration.inline(start, innerStart, {
             class: 'boundary-decorator',
-          })
+          }, { type: 'marker' })
         );
         decorations.push(
           Decoration.inline(innerEnd, end, {
             class: 'boundary-decorator',
-          })
+          }, { type: 'marker' })
         );
       }
     }
