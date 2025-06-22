@@ -24,14 +24,14 @@ export const toggleBoldCommand = (state: EditorState, dispatch?: (tr: Transactio
   let tr = state.tr;
 
   const shouldBecomeBold = checkShouldBecomeBold(from, to, boldDecorations);
+  const firstMarker = boldDecorations[0];
+  const lastMarker = boldDecorations.at(-1);
+
   if (shouldBecomeBold) {
     for (let decoration of markerDecorations) {
       if (from === decoration.from || to === decoration.to) continue;
       tr = tr.delete(tr.mapping.map(decoration.from), tr.mapping.map(decoration.to));
     }
-    const firstMarker = boldDecorations[0];
-    const lastMarker = boldDecorations.at(-1);
-    console.log(from, to, firstMarker, lastMarker)
     const isBoldAtStart = firstMarker && from >= firstMarker.from;
     const isBoldAtEnd = lastMarker && to <= lastMarker.to;
     if (!isBoldAtStart) {
@@ -39,6 +39,18 @@ export const toggleBoldCommand = (state: EditorState, dispatch?: (tr: Transactio
     }
     if (!isBoldAtEnd) {
       tr = tr.insertText('**', tr.mapping.map(to));
+    }
+  } else {
+    for (let decoration of markerDecorations) {
+      tr = tr.delete(tr.mapping.map(decoration.from), tr.mapping.map(decoration.to));
+    }
+    const shouldBreakAtStart = firstMarker && firstMarker.from < from;
+    const shouldBreakAtEnd = lastMarker && lastMarker.to > to;
+    if (shouldBreakAtStart) {
+      tr = tr.insertText('**', tr.mapping.map(from - 1));
+    }
+    if (shouldBreakAtEnd) {
+      tr = tr.insertText('**', tr.mapping.map(to + 1));
     }
   }
 
@@ -50,7 +62,6 @@ export const toggleBoldCommand = (state: EditorState, dispatch?: (tr: Transactio
 function checkShouldBecomeBold(from: number, to: number, boldDecorations: Decoration[]): boolean {
   const boldStart = boldDecorations[0]?.from;
   const boldEnd = boldDecorations.at(-1)?.to;
-  console.log(boldStart, boldEnd)
   if (!boldStart || !boldEnd) return true;
   if (from < boldStart || to > boldEnd) return true;
 
@@ -75,7 +86,7 @@ function getStartOfWordOffset(text: string): number {
 
 function getEndOfWordOffset(text: string): number {
   let offset = 0;
-  while (offset < text.length - 1 && text[offset] !== ' ') {
+  while (offset < text.length && text[offset] !== ' ') {
     offset++;
   }
   return offset;
