@@ -7,6 +7,7 @@ type BoldDecorationSpec = {
 }
 
 // Command to toggle bold marks around selected text
+// TODO: handle multi-line bold and unbold. Doesn't work as expected yet
 export const toggleBoldCommand = (state: EditorState, dispatch?: (tr: Transaction) => void) => {
   const decorations = boldPlugin.getState(state);
   if (!decorations) return false;
@@ -91,32 +92,6 @@ function getEndOfWordOffset(text: string): number {
   return offset;
 }
 
-function getOffsetInParent(state: EditorState, pos: number): number {
-  const resolved = state.doc.resolve(pos);
-  return resolved.parentOffset;
-}
-
-/** Get offset of the start of the selected bold range, accounting for ** characters */
-function getBoldedOffsetStart(selectedText: string): number {
-  if (selectedText[0] === '*' && selectedText[1] === '*') {
-    return 2;
-  } else if (selectedText[0] === '*') {
-    return 1;
-  } else {
-    return 0;
-  }
-}
-
-/** Get offset of the end of the selected bold range, accounting for ** characters */
-function getBoldedOffsetEnd(selectedText: string): number {
-  if (selectedText.at(-2) === '*' && selectedText.at(-1) === '*') {
-    return -2;
-  } else if (selectedText.at(-1) === '*') {
-    return -1;
-  } else {
-    return 0;
-  }
-}
 
 export const boldPlugin = new Plugin({
   state: {
