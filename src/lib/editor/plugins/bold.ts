@@ -13,6 +13,8 @@ export const toggleBoldCommand = (state: EditorState, dispatch?: (tr: Transactio
   if (!dispatch) return true;
 
   const { selection } = state;
+  // Move `from` to the start of the word, and `to` to the end of the word.
+  // Ex: Ex[ample te]xt -> [Example text]
   const fromOffset = getStartOfWordOffset(state.doc.resolve(selection.from).nodeBefore?.textContent ?? '');
   const toOffset = getEndOfWordOffset(state.doc.resolve(selection.to).nodeAfter?.textContent ?? '');
   const from = selection.from - fromOffset;
@@ -26,14 +28,13 @@ export const toggleBoldCommand = (state: EditorState, dispatch?: (tr: Transactio
   const shouldBecomeBold = checkShouldBecomeBold(from, to, boldDecorations);
   const firstMarker = boldDecorations[0];
   const lastMarker = boldDecorations.at(-1);
+  const isBoldAtStart = firstMarker && from > firstMarker.from;
+  const isBoldAtEnd = lastMarker && to < lastMarker.to;
+  for (let decoration of markerDecorations) {
+    tr = tr.delete(tr.mapping.map(decoration.from), tr.mapping.map(decoration.to));
+  }
 
   if (shouldBecomeBold) {
-    for (let decoration of markerDecorations) {
-      if (from === decoration.from || to === decoration.to) continue;
-      tr = tr.delete(tr.mapping.map(decoration.from), tr.mapping.map(decoration.to));
-    }
-    const isBoldAtStart = firstMarker && from >= firstMarker.from;
-    const isBoldAtEnd = lastMarker && to <= lastMarker.to;
     if (!isBoldAtStart) {
       tr = tr.insertText('**', tr.mapping.map(from));
     }
@@ -41,15 +42,12 @@ export const toggleBoldCommand = (state: EditorState, dispatch?: (tr: Transactio
       tr = tr.insertText('**', tr.mapping.map(to));
     }
   } else {
-    for (let decoration of markerDecorations) {
-      tr = tr.delete(tr.mapping.map(decoration.from), tr.mapping.map(decoration.to));
-    }
-    const shouldBreakAtStart = firstMarker && firstMarker.from < from;
-    const shouldBreakAtEnd = lastMarker && lastMarker.to > to;
-    if (shouldBreakAtStart) {
+    if (isBoldAtStart) {
+      // move by 1 to place after the space rather than before
+      // ex: generate "**bold** text" instead of "**bold **text"
       tr = tr.insertText('**', tr.mapping.map(from - 1));
     }
-    if (shouldBreakAtEnd) {
+    if (isBoldAtEnd) {
       tr = tr.insertText('**', tr.mapping.map(to + 1));
     }
   }
@@ -59,6 +57,7 @@ export const toggleBoldCommand = (state: EditorState, dispatch?: (tr: Transactio
   return true;
 };
 
+/** A selection should become bold if any part of the selection is not included by a bold decoration */
 function checkShouldBecomeBold(from: number, to: number, boldDecorations: Decoration[]): boolean {
   const boldStart = boldDecorations[0]?.from;
   const boldEnd = boldDecorations.at(-1)?.to;
