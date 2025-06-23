@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { EditorState, TextSelection } from 'prosemirror-state';
 	import { EditorView } from 'prosemirror-view';
-	import { boldPlugin, boldKeymapPlugin } from './plugins/bold';
 	import 'prosemirror-view/style/prosemirror.css';
 	import { keymap } from 'prosemirror-keymap';
 	import { baseKeymap } from 'prosemirror-commands';
 	import { history, undo, redo } from 'prosemirror-history';
 	import { schema } from './schema';
+	import { boldPlugin } from './plugins/bold';
+	import { italicPlugin } from './plugins/italic';
+	import { markKeymapPlugin } from './plugins/keymaps';
 
 	let editor = $state<HTMLDivElement>();
 
@@ -21,7 +23,14 @@
 					schema.node('paragraph', null, [schema.text('This should be **bold** text')]),
 				]),
 				schema,
-				plugins: [boldPlugin, boldKeymapPlugin, history(), keymap({ 'Mod-z': undo, 'Mod-y': redo }), keymap(baseKeymap)],
+				plugins: [
+					boldPlugin,
+					italicPlugin,
+					markKeymapPlugin,
+					history(),
+					keymap({ 'Mod-z': undo, 'Mod-y': redo }),
+					keymap(baseKeymap),
+				],
 			}),
 		});
 
