@@ -5,6 +5,7 @@
 	import 'prosemirror-view/style/prosemirror.css';
 	import { keymap } from 'prosemirror-keymap';
 	import { baseKeymap } from 'prosemirror-commands';
+	import { history, undo, redo } from 'prosemirror-history';
 	import { schema } from './schema';
 
 	let editor = $state<HTMLDivElement>();
@@ -20,7 +21,7 @@
 					schema.node('paragraph', null, [schema.text('This should be **bold** text')]),
 				]),
 				schema,
-				plugins: [boldPlugin, boldKeymapPlugin, keymap(baseKeymap)],
+				plugins: [boldPlugin, boldKeymapPlugin, history(), keymap({ 'Mod-z': undo, 'Mod-y': redo }), keymap(baseKeymap)],
 			}),
 		});
 
