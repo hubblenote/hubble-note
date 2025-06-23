@@ -1,13 +1,67 @@
-import { Plugin, EditorState, Transaction } from "prosemirror-state";
+import { Plugin, EditorState, Transaction, type Command } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 import { keymap } from "prosemirror-keymap";
 
-type BoldDecorationSpec = {
+type MarkDecorationSpec = {
   type: 'marker' | 'text';
 }
 
+// Create command to toggle marks like `**` bold and `_` italic
+// TODO: handle multi-line selections. Doesn't work as expected yet
+// TODO handle marks that are adjacent but separated by spaces
+export const createToggleMarkCommand = (pluginRef: Plugin, mark: string): Command => {
+  return (state, dispatch) => {
+    const decorations = pluginRef.getState(state);
+    if (!decorations) return false;
+    if (!dispatch) return true;
+
+    const { selection } = state;
+    // Move `from` to the start of the word, and `to` to the end of the word.
+    // Ex: Ex[ample te]xt -> [Example text]
+    const fromOffset = getStartOfWordOffset(state.doc.resolve(selection.from).nodeBefore?.textContent ?? '');
+    const toOffset = getEndOfWordOffset(state.doc.resolve(selection.to).nodeAfter?.textContent ?? '');
+    const from = selection.from - fromOffset;
+    const to = selection.to + toOffset;
+
+    const textDecorations = decorations.find(from, to, (spec: MarkDecorationSpec) => spec.type === 'text');
+    const markerDecorations = decorations.find(from, to, (spec: MarkDecorationSpec) => spec.type === 'marker');
+
+    let tr = state.tr;
+
+    const shouldApplyMark = checkShouldApplyMark(from, to, textDecorations);
+    const firstMarker = textDecorations[0];
+    const lastMarker = textDecorations.at(-1);
+    const isAppliedAtStart = firstMarker && from > firstMarker.from;
+    const isAppliedAtEnd = lastMarker && to < lastMarker.to;
+    for (let decoration of markerDecorations) {
+      tr = tr.delete(tr.mapping.map(decoration.from), tr.mapping.map(decoration.to));
+    }
+
+    if (shouldApplyMark) {
+      if (!isAppliedAtStart) {
+        tr = tr.insertText(mark, tr.mapping.map(from));
+      }
+      if (!isAppliedAtEnd) {
+        tr = tr.insertText(mark, tr.mapping.map(to));
+      }
+    } else {
+      if (isAppliedAtStart) {
+        // move by 1 to place after the space rather than before
+        // ex: generate "**bold** text" instead of "**bold **text"
+        tr = tr.insertText(mark, tr.mapping.map(from - 1));
+      }
+      if (isAppliedAtEnd) {
+        tr = tr.insertText(mark, tr.mapping.map(to + 1));
+      }
+    }
+
+    dispatch(tr);
+
+    return true;
+  }
+}
+
 // Command to toggle bold marks around selected text
-// TODO: handle multi-line bold and unbold. Doesn't work as expected yet
 export const toggleBoldCommand = (state: EditorState, dispatch?: (tr: Transaction) => void) => {
   const decorations = boldPlugin.getState(state);
   if (!decorations) return false;
@@ -21,12 +75,12 @@ export const toggleBoldCommand = (state: EditorState, dispatch?: (tr: Transactio
   const from = selection.from - fromOffset;
   const to = selection.to + toOffset;
 
-  const boldDecorations = decorations.find(from, to, (spec: BoldDecorationSpec) => spec.type === 'text');
-  const markerDecorations = decorations.find(from, to, (spec: BoldDecorationSpec) => spec.type === 'marker');
+  const boldDecorations = decorations.find(from, to, (spec: MarkDecorationSpec) => spec.type === 'text');
+  const markerDecorations = decorations.find(from, to, (spec: MarkDecorationSpec) => spec.type === 'marker');
 
   let tr = state.tr;
 
-  const shouldBecomeBold = checkShouldBecomeBold(from, to, boldDecorations);
+  const shouldBecomeBold = checkShouldApplyMark(from, to, boldDecorations);
   const firstMarker = boldDecorations[0];
   const lastMarker = boldDecorations.at(-1);
   const isBoldAtStart = firstMarker && from > firstMarker.from;
@@ -59,15 +113,15 @@ export const toggleBoldCommand = (state: EditorState, dispatch?: (tr: Transactio
 };
 
 /** A selection should become bold if any part of the selection is not included by a bold decoration */
-function checkShouldBecomeBold(from: number, to: number, boldDecorations: Decoration[]): boolean {
-  const boldStart = boldDecorations[0]?.from;
-  const boldEnd = boldDecorations.at(-1)?.to;
-  if (!boldStart || !boldEnd) return true;
-  if (from < boldStart || to > boldEnd) return true;
+function checkShouldApplyMark(from: number, to: number, decorations: Decoration[]): boolean {
+  const markStart = decorations[0]?.from;
+  const markEnd = decorations.at(-1)?.to;
+  if (!markStart || !markEnd) return true;
+  if (from < markStart || to > markEnd) return true;
 
   // Otherwise, looks for breaks in bold in the middle of the text
-  let prevDecoration = boldDecorations[0];
-  for (let decoration of boldDecorations) {
+  let prevDecoration = decorations[0];
+  for (let decoration of decorations) {
     if (decoration == prevDecoration) continue;
     if (!prevDecoration) return true;
     if (prevDecoration.to < decoration.from) return true;
@@ -161,7 +215,8 @@ function findBoldDecorations(doc: any) {
 
 // Keymap plugin for bold shortcuts
 export const boldKeymapPlugin = keymap({
-  'Mod-b': toggleBoldCommand,
+            toggleBoldCommand, 
   'Mod-B': toggleBoldCommand
 });
+
 
