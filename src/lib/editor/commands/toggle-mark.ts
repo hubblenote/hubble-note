@@ -2,7 +2,7 @@ import type { Plugin, Command } from 'prosemirror-state';
 import type { Decoration } from 'prosemirror-view';
 
 export type MarkDecorationSpec = {
-  type: 'marker' | 'text';
+  type: 'marker' | 'text' | 'mark';
 }
 
 // Create command to toggle marks like `**` bold and `_` italic
@@ -23,7 +23,7 @@ export const createToggleMarkCommand = (pluginRef: Plugin, mark: string): Comman
     const from = selection.from - fromOffset;
     const to = selection.to + toOffset;
 
-    const textDecorations = decorations.find(from, to, (spec: MarkDecorationSpec) => spec.type === 'text');
+    const textDecorations = decorations.find(from, to, (spec: MarkDecorationSpec) => spec.type === 'mark');
     const markerDecorations = decorations.find(from, to, (spec: MarkDecorationSpec) => spec.type === 'marker');
 
     let tr = state.tr;

@@ -39,19 +39,19 @@ function findBoldDecorations(doc: any) {
         const start = pos + match.index;
         const end = start + match[0].length;
 
-        // Add decoration for the entire match including ** symbols
-        // But only make the inner text bold
-        const innerStart = start + 2; // Skip first **
-        const innerEnd = end - 2; // Skip last **
-
-        // Make the inner text bold with strong tag
         decorations.push(
-          Decoration.inline(start, end, {
+          Decoration.inline(start, end, {}, { type: 'mark' }),
+        );
+
+        const innerStart = start + 2;
+        const innerEnd = end - 2;
+
+        decorations.push(
+          Decoration.inline(innerStart, innerEnd, {
             nodeName: 'strong',
           }, { type: 'text' })
         );
 
-        // Make the ** symbols slightly dimmed
         decorations.push(
           Decoration.inline(start, innerStart, {
             class: 'boundary-decorator',

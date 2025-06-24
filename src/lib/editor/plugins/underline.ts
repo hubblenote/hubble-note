@@ -38,19 +38,19 @@ function findUnderlineDecorations(doc: any) {
         const start = pos + match.index;
         const end = start + match[0].length;
 
-        // Add decoration for the entire match including ~ symbols
-        // But only make the inner text underlined
-        const innerStart = start + 1; // Skip first ~
-        const innerEnd = end - 1; // Skip last ~
-
-        // Make the inner text underlined with u tag
         decorations.push(
-          Decoration.inline(start, end, {
+          Decoration.inline(start, end, {}, { type: 'mark' }),
+        );
+
+        const innerStart = start + 1;
+        const innerEnd = end - 1;
+
+        decorations.push(
+          Decoration.inline(innerStart, innerEnd, {
             nodeName: 'u',
           }, { type: 'text' })
         );
 
-        // Make the ~ symbols slightly dimmed
         decorations.push(
           Decoration.inline(start, innerStart, {
             class: 'boundary-decorator',
