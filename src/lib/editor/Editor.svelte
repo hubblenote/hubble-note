@@ -8,6 +8,8 @@
 	import { schema } from './schema';
 	import { boldPlugin, boldKeymapPlugin } from './plugins/bold';
 	import { italicPlugin, italicKeymapPlugin } from './plugins/italic';
+	import { underlinePlugin, underlineKeymapPlugin } from './plugins/underline';
+	import { highlightPlugin, highlightKeymapPlugin } from './plugins/highlight';
 
 	let editor = $state<HTMLDivElement>();
 
@@ -25,8 +27,12 @@
 				plugins: [
 					boldPlugin,
 					italicPlugin,
+					underlinePlugin,
+					highlightPlugin,
 					boldKeymapPlugin,
 					italicKeymapPlugin,
+					underlineKeymapPlugin,
+					highlightKeymapPlugin,
 					history(),
 					keymap({ 'Mod-z': undo, 'Mod-y': redo }),
 					keymap(baseKeymap),
