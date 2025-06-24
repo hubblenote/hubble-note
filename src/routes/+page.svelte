@@ -7,4 +7,7 @@
 </main>
 
 <style>
+	:global(body) {
+		font-size: 4rem;
+	}
 </style>

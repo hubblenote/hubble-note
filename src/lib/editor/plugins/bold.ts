@@ -1,7 +1,7 @@
+import { keymap } from "prosemirror-keymap";
 import { Plugin, EditorState, Transaction, type Command } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
-
-export const BOLD_MARK = '**';
+import { createToggleMarkCommand } from "../commands/toggle-mark";
 
 export const boldPlugin = new Plugin({
   state: {
@@ -69,3 +69,6 @@ function findBoldDecorations(doc: any) {
   return DecorationSet.create(doc, decorations);
 }
 
+export const boldKeymapPlugin = keymap({
+  'mod-b': createToggleMarkCommand(boldPlugin, '**'),
+})

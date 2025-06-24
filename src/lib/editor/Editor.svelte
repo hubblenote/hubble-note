@@ -6,9 +6,8 @@
 	import { baseKeymap } from 'prosemirror-commands';
 	import { history, undo, redo } from 'prosemirror-history';
 	import { schema } from './schema';
-	import { boldPlugin } from './plugins/bold';
-	import { italicPlugin } from './plugins/italic';
-	import { markKeymapPlugin } from './plugins/keymaps';
+	import { boldPlugin, boldKeymapPlugin } from './plugins/bold';
+	import { italicPlugin, italicKeymapPlugin } from './plugins/italic';
 
 	let editor = $state<HTMLDivElement>();
 
@@ -26,7 +25,8 @@
 				plugins: [
 					boldPlugin,
 					italicPlugin,
-					markKeymapPlugin,
+					boldKeymapPlugin,
+					italicKeymapPlugin,
 					history(),
 					keymap({ 'Mod-z': undo, 'Mod-y': redo }),
 					keymap(baseKeymap),
