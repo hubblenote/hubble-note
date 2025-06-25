@@ -30,11 +30,10 @@ function applyDecorations(doc: any) {
     doc.descendants((node: any, pos: number) => {
         if (node.type.name === 'text' && node.text) {
             const text = node.text;
-            const regex = /\[([^\[]+)\]\(([^\(]*)\)/g;
+            const regex = /\[([^\[]+)\]/g;
             let match;
 
             while ((match = regex.exec(text)) !== null) {
-                console.log({ match })
                 const start = pos + match.index;
                 const end = start + match[0].length;
 
@@ -48,7 +47,6 @@ function applyDecorations(doc: any) {
                 decorations.push(
                     Decoration.inline(innerStart, innerEnd, {
                         class: 'link',
-                        href: '',
                     }, { type: 'text' })
                 );
 
