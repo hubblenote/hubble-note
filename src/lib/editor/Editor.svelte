@@ -11,7 +11,8 @@
 	import { italicPlugin, italicKeymapPlugin } from './plugins/italic';
 	import { underlinePlugin, underlineKeymapPlugin } from './plugins/underline';
 	import { highlightPlugin, highlightKeymapPlugin } from './plugins/highlight';
-	import { linkPlugin, linkKeymapPlugin } from './plugins/link';
+	import { linkPlugin, linkKeymapPlugin } from './plugins/link.svelte';
+	import LinkPopover from './LinkPopover.svelte';
 
 	let editor = $state<HTMLDivElement>();
 
@@ -56,6 +57,7 @@
 </script>
 
 <div bind:this={editor}></div>
+<LinkPopover />
 
 <style>
 	:global(.ProseMirror) {

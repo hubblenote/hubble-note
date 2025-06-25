@@ -1,7 +1,8 @@
 import { keymap } from "prosemirror-keymap";
-import { Plugin } from "prosemirror-state";
+import { Plugin, Transaction } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 import { createToggleMarkCommand } from "../commands/toggle-mark";
+import { linkPopoverState } from "../LinkPopoverState.svelte";
 
 export const linkPlugin = new Plugin({
     state: {
@@ -9,12 +10,15 @@ export const linkPlugin = new Plugin({
             return DecorationSet.empty;
         },
         apply(tr, _oldState) {
-            return applyDecorations(tr.doc);
+            const decorations = applyDecorations(tr.doc);
+            if (tr.selectionSet) {
+                linkPopoverState.elementId = getSelectedLinkId(tr, decorations);
+            }
+            return decorations;
         }
     },
     props: {
         transformPastedHTML(html) {
-            // Convert <strong>text</strong> to **text**
             return html
                 .replace(/<a[^>]*>([^<]+)<\/a>/gi, '[$1]');
         },
@@ -23,6 +27,29 @@ export const linkPlugin = new Plugin({
         },
     }
 });
+
+function getSelectedLinkId(tr: Transaction, decorations: DecorationSet): string | null {
+    const { selection } = tr;
+    const { from, to } = selection;
+
+    const markDecorations = decorations.find(from, to, (spec) => {
+        return spec && spec.type === 'mark';
+    });
+
+    const match = markDecorations.find((decoration) => {
+        return from >= decoration.from && to <= decoration.to;
+    });
+
+    if (match) {
+        return getLinkId(match.from, match.to);
+    }
+
+    return null;
+}
+
+function getLinkId(from: number, to: number): string {
+    return `link-${from}-${to}`;
+}
 
 function applyDecorations(doc: any) {
     const decorations: Decoration[] = [];
@@ -38,7 +65,10 @@ function applyDecorations(doc: any) {
                 const end = start + match[0].length;
 
                 decorations.push(
-                    Decoration.inline(start, end, {}, { type: 'mark' }),
+                    Decoration.inline(start, end, {
+                        class: 'link-mark',
+                        'data-href': '',
+                    }, { type: 'mark' }),
                 );
 
                 const innerStart = start + 1;
@@ -46,7 +76,8 @@ function applyDecorations(doc: any) {
 
                 decorations.push(
                     Decoration.inline(innerStart, innerEnd, {
-                        class: 'link',
+                        class: 'link-text',
+                        id: getLinkId(start, end),
                     }, { type: 'text' })
                 );
 
