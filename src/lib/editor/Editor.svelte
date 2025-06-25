@@ -1,4 +1,5 @@
 <script lang="ts">
+	import './styles.css';
 	import { EditorState, TextSelection } from 'prosemirror-state';
 	import { EditorView } from 'prosemirror-view';
 	import 'prosemirror-view/style/prosemirror.css';

@@ -1,0 +1,12 @@
+.ProseMirror {
+    font-size: 4rem;
+}
+
+.link {
+    color: #565656;
+    text-decoration: underline;
+}
+
+.boundary-attr {
+    visibility: hidden;
+}
