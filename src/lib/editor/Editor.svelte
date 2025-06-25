@@ -11,6 +11,7 @@
 	import { italicPlugin, italicKeymapPlugin } from './plugins/italic';
 	import { underlinePlugin, underlineKeymapPlugin } from './plugins/underline';
 	import { highlightPlugin, highlightKeymapPlugin } from './plugins/highlight';
+	import { linkPlugin, linkKeymapPlugin } from './plugins/link';
 
 	let editor = $state<HTMLDivElement>();
 
@@ -30,10 +31,12 @@
 					italicPlugin,
 					underlinePlugin,
 					highlightPlugin,
+					linkPlugin,
 					boldKeymapPlugin,
 					italicKeymapPlugin,
 					underlineKeymapPlugin,
 					highlightKeymapPlugin,
+					linkKeymapPlugin,
 					history(),
 					keymap({ 'Mod-z': undo, 'Mod-y': redo }),
 					keymap(baseKeymap),

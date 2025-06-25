@@ -8,10 +8,9 @@ export type MarkDecorationSpec = {
 // Create command to toggle marks like `**` bold and `_` italic
 // TODO: handle multi-line selections. Doesn't work as expected yet
 // TODO handle marks that are adjacent but separated by spaces
-export const createToggleMarkCommand = (pluginRef: Plugin, mark: string): Command => {
+export const createToggleMarkCommand = (pluginRef: Plugin, mark: string, closingMark?: string): Command => {
   return (state, dispatch) => {
     const decorations = pluginRef.getState(state);
-    console.log(mark, decorations)
     if (!decorations) return false;
     if (!dispatch) return true;
 
@@ -42,7 +41,7 @@ export const createToggleMarkCommand = (pluginRef: Plugin, mark: string): Comman
         tr = tr.insertText(mark, tr.mapping.map(from));
       }
       if (!isAppliedAtEnd) {
-        tr = tr.insertText(mark, tr.mapping.map(to));
+        tr = tr.insertText(closingMark ?? mark, tr.mapping.map(to));
       }
     } else {
       if (isAppliedAtStart) {
@@ -51,7 +50,7 @@ export const createToggleMarkCommand = (pluginRef: Plugin, mark: string): Comman
         tr = tr.insertText(mark, tr.mapping.map(from - 1));
       }
       if (isAppliedAtEnd) {
-        tr = tr.insertText(mark, tr.mapping.map(to + 1));
+        tr = tr.insertText(closingMark ?? mark, tr.mapping.map(to + 1));
       }
     }
 
