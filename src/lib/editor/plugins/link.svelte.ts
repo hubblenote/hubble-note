@@ -1,10 +1,11 @@
 import { keymap } from "prosemirror-keymap";
-import { EditorState, Plugin, Transaction } from "prosemirror-state";
+import { Plugin, Transaction } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 import { createToggleMarkCommand } from "../commands/toggle-mark";
 import { linkPopoverState } from "../LinkPopoverState.svelte";
 import type { Node } from "prosemirror-model";
-import { schema } from "../schema";
+import { createLinkMark, schema } from "../schema";
+import type { Range } from "../types";
 
 export const linkPlugin = new Plugin({
     state: {
@@ -14,7 +15,8 @@ export const linkPlugin = new Plugin({
         apply(tr, _oldState) {
             const decorations = getDecorations(tr.doc);
             if (tr.selectionSet) {
-                linkPopoverState.elementId = getSelectedLinkId(tr);
+                const range = getSelectedLinkRange(tr);
+                linkPopoverState.setRange(range);
             }
             return decorations;
         }
@@ -34,9 +36,8 @@ export const linkPlugin = new Plugin({
     }
 });
 
-function getSelectedLinkId(tr: Transaction): string | null {
+function getSelectedLinkRange(tr: Transaction): Range | null {
     const bracketMatches = getBracketMatches(tr.doc);
-    console.log('bracketMatches', bracketMatches);
     const { selection } = tr;
 
     const match = bracketMatches.find(match => {
@@ -44,17 +45,11 @@ function getSelectedLinkId(tr: Transaction): string | null {
     });
 
     if (match) {
-        return getLinkId(match.from, match.to);
+        return match;
     }
 
     return null;
 }
-
-function getLinkId(from: number, to: number): string {
-    return `link-${from}-${to}`;
-}
-
-type Range = { from: number, to: number };
 
 function getBracketMatches(doc: Node): Range[] {
     const matches: Range[] = [];
@@ -101,7 +96,6 @@ function getDecorations(doc: Node) {
         decorations.push(
             Decoration.inline(innerStart, innerEnd, {
                 class: 'link-text',
-                id: getLinkId(match.from, match.to),
             }, { type: 'text' })
         );
     }
@@ -123,7 +117,9 @@ function updateMarks(tr: Transaction) {
     const matches = getBracketMatches(tr.doc);
     matches.forEach(match => {
         if (tr.doc.rangeHasMark(match.from, match.to, schema.marks.link)) return;
-        tr.addMark(tr.mapping.map(match.from), tr.mapping.map(match.to), schema.marks.link.create({ 'data-href': '#' }));
+        const from = tr.mapping.map(match.from);
+        const to = tr.mapping.map(match.to);
+        tr.addMark(from, to, createLinkMark(from, to));
     });
 
     return tr;

@@ -3,22 +3,21 @@
 	import { linkPopoverState } from './LinkPopoverState.svelte';
 
 	let popoverEl = $state<HTMLDivElement | null>(null);
+	let linkEl = $derived(linkPopoverState.getElement());
 
 	$effect(() => {
-		if (!linkPopoverState.elementId || !popoverEl) return;
-		const linkDecoration = document.getElementById(linkPopoverState.elementId);
-		if (linkDecoration) {
-			computePosition(linkDecoration, popoverEl, {
-				placement: 'top',
-			}).then(({ x, y }) => {
-				popoverEl.style.left = `${x}px`;
-				popoverEl.style.top = `${y}px`;
-			});
-		}
+		if (!linkEl || !popoverEl) return;
+		computePosition(linkEl, popoverEl, {
+			placement: 'top',
+		}).then(({ x, y }) => {
+			if (!popoverEl) return;
+			popoverEl.style.left = `${x}px`;
+			popoverEl.style.top = `${y}px`;
+		});
 	});
 </script>
 
-<div hidden={!linkPopoverState.elementId} class="link-popover" bind:this={popoverEl}>
+<div hidden={!linkEl} class="link-popover" bind:this={popoverEl}>
 	<input type="text" />
 </div>
 
