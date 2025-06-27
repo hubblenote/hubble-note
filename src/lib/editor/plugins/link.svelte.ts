@@ -1,8 +1,10 @@
 import { keymap } from "prosemirror-keymap";
-import { Plugin, Transaction } from "prosemirror-state";
+import { EditorState, Plugin, Transaction } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 import { createToggleMarkCommand } from "../commands/toggle-mark";
 import { linkPopoverState } from "../LinkPopoverState.svelte";
+import type { Node } from "prosemirror-model";
+import { schema } from "../schema";
 
 export const linkPlugin = new Plugin({
     state: {
@@ -10,12 +12,16 @@ export const linkPlugin = new Plugin({
             return DecorationSet.empty;
         },
         apply(tr, _oldState) {
-            const decorations = applyDecorations(tr.doc);
+            const decorations = getDecorations(tr.doc);
             if (tr.selectionSet) {
-                linkPopoverState.elementId = getSelectedLinkId(tr, decorations);
+                linkPopoverState.elementId = getSelectedLinkId(tr);
             }
             return decorations;
         }
+    },
+    appendTransaction(transactions, _oldState, newState) {
+        if (!transactions.some(tr => tr.docChanged)) return;
+        return updateMarks(newState.tr);
     },
     props: {
         transformPastedHTML(html) {
@@ -28,16 +34,13 @@ export const linkPlugin = new Plugin({
     }
 });
 
-function getSelectedLinkId(tr: Transaction, decorations: DecorationSet): string | null {
+function getSelectedLinkId(tr: Transaction): string | null {
+    const bracketMatches = getBracketMatches(tr.doc);
+    console.log('bracketMatches', bracketMatches);
     const { selection } = tr;
-    const { from, to } = selection;
 
-    const markDecorations = decorations.find(from, to, (spec) => {
-        return spec && spec.type === 'mark';
-    });
-
-    const match = markDecorations.find((decoration) => {
-        return from >= decoration.from && to <= decoration.to;
+    const match = bracketMatches.find(match => {
+        return selection.from >= match.from && selection.to <= match.to;
     });
 
     if (match) {
@@ -51,52 +54,79 @@ function getLinkId(from: number, to: number): string {
     return `link-${from}-${to}`;
 }
 
-function applyDecorations(doc: any) {
-    const decorations: Decoration[] = [];
+type Range = { from: number, to: number };
 
-    doc.descendants((node: any, pos: number) => {
-        if (node.type.name === 'text' && node.text) {
-            const text = node.text;
+function getBracketMatches(doc: Node): Range[] {
+    const matches: Range[] = [];
+
+    doc.descendants((node, pos) => {
+        if (node.inlineContent) {
+            const text = node.textContent;
             const regex = /\[([^\[]+)\]/g;
             let match;
 
             while ((match = regex.exec(text)) !== null) {
-                const start = pos + match.index;
+                const start = pos + 1 + match.index;
                 const end = start + match[0].length;
 
-                decorations.push(
-                    Decoration.inline(start, end, {
-                        class: 'link-mark',
-                        'data-href': '',
-                    }, { type: 'mark' }),
-                );
+                matches.push({ from: start, to: end });
+            }
+            return false;
+        }
+    });
 
-                const innerStart = start + 1;
-                const innerEnd = end - 1;
+    return matches;
+}
 
-                decorations.push(
-                    Decoration.inline(innerStart, innerEnd, {
-                        class: 'link-text',
-                        id: getLinkId(start, end),
-                    }, { type: 'text' })
-                );
+function getDecorations(doc: Node) {
+    const matches = getBracketMatches(doc);
+    const decorations: Decoration[] = [];
 
-                decorations.push(
-                    Decoration.inline(start, innerStart, {
-                        class: 'boundary-decorator',
-                    }, { type: 'marker' })
-                );
+    for (const match of matches) {
+        const innerStart = match.from + 1;
+        const innerEnd = match.to - 1;
 
-                decorations.push(
-                    Decoration.inline(innerEnd, end, {
-                        class: 'boundary-decorator',
-                    }, { type: 'marker' })
-                );
+        decorations.push(
+            Decoration.inline(match.from, innerStart, {
+                class: 'boundary-decorator',
+            }, { type: 'marker' }),
+        );
+
+        decorations.push(
+            Decoration.inline(innerEnd, match.to, {
+                class: 'boundary-decorator',
+            }, { type: 'marker' }),
+        );
+
+        decorations.push(
+            Decoration.inline(innerStart, innerEnd, {
+                class: 'link-text',
+                id: getLinkId(match.from, match.to),
+            }, { type: 'text' })
+        );
+    }
+
+    return DecorationSet.create(doc, decorations);
+}
+
+function updateMarks(tr: Transaction) {
+    tr.doc.descendants((node, pos) => {
+        if (node.isText && node.marks.some(mark => mark.type === schema.marks.link)) {
+            const hasOpeningBracket = tr.doc.textBetween(pos, pos + 1) === '[';
+            const hasClosingBracket = tr.doc.textBetween(pos + node.nodeSize - 1, pos + node.nodeSize) === ']';
+            if (!hasOpeningBracket || !hasClosingBracket) {
+                tr.removeMark(tr.mapping.map(pos), tr.mapping.map(pos + node.nodeSize), schema.marks.link);
             }
         }
     });
 
-    return DecorationSet.create(doc, decorations);
+    const matches = getBracketMatches(tr.doc);
+    matches.forEach(match => {
+        if (tr.doc.rangeHasMark(match.from, match.to, schema.marks.link)) return;
+        tr.addMark(tr.mapping.map(match.from), tr.mapping.map(match.to), schema.marks.link.create({ 'data-href': '#' }));
+    });
+
+    return tr;
 }
 
 export const linkKeymapPlugin = keymap({

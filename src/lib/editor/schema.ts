@@ -17,4 +17,17 @@ export const schema = new Schema({
       group: 'inline',
     },
   },
+  marks: {
+    link: {
+      attrs: {
+        'data-href': {
+          default: null,
+        },
+      },
+      parseDOM: [{ tag: 'span', getAttrs: (dom) => ({ 'data-href': dom.getAttribute('data-href') }) }],
+      toDOM(node) {
+        return ['span', { 'data-href': node.attrs['data-href'] }, 0];
+      },
+    }
+  }
 });
