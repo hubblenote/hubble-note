@@ -1,37 +1,15 @@
 /**
  * Utility for matching keyboard events against Electron accelerator strings
  * 
- * Examples of accelerator strings:
- * - "CmdOrCtrl+N"
- * - "Cmd+Shift+P"
- * - "Alt+F4"
- * - "F5"
- * - "Escape"
+ * Examples: "CmdOrCtrl+N", "Cmd+Shift+P", "Alt+F4", "F5", "Escape"
  */
-
-interface ModifierKeys {
-  cmd: boolean;
-  ctrl: boolean;
-  alt: boolean;
-  shift: boolean;
-  meta: boolean;
-}
 
 /**
  * Parses an Electron-style match string into its components
  */
-function parseMatchString(matchString: string): { modifiers: ModifierKeys; key: string } {
-  if (!matchString || matchString.trim() === '') {
-    return {
-      modifiers: {
-        cmd: false,
-        ctrl: false,
-        alt: false,
-        shift: false,
-        meta: false,
-      },
-      key: ''
-    };
+function parseMatchString(matchString: string) {
+  if (!matchString?.trim()) {
+    return { ctrl: false, alt: false, shift: false, meta: false, key: '' };
   }
 
   const parts = matchString.split('+');
@@ -39,50 +17,43 @@ function parseMatchString(matchString: string): { modifiers: ModifierKeys; key: 
   if (!key) {
     throw new Error(`Invalid accelerator: ${matchString}`);
   }
+  
   const modifierParts = parts.slice(0, -1).map(part => part.toLowerCase());
-
-  const modifiers: ModifierKeys = {
-    cmd: false,
-    ctrl: false,
-    alt: false,
-    shift: false,
-    meta: false,
-  };
+  let ctrl = false, alt = false, shift = false, meta = false;
 
   for (const modifier of modifierParts) {
     switch (modifier) {
       case 'cmd':
       case 'command':
-        modifiers.meta = true; // Cmd maps to metaKey
+        meta = true;
         break;
       case 'ctrl':
       case 'control':
-        modifiers.ctrl = true;
+        ctrl = true;
         break;
       case 'cmdorctrl':
       case 'commandorcontrol':
-        // On macOS, use Cmd (meta); on Windows/Linux, use Ctrl
         if (navigator.platform.toLowerCase().includes('mac')) {
-          modifiers.meta = true;
+          meta = true;
         } else {
-          modifiers.ctrl = true;
+          ctrl = true;
         }
         break;
       case 'alt':
       case 'option':
-        modifiers.alt = true;
+        alt = true;
         break;
       case 'shift':
-        modifiers.shift = true;
+        shift = true;
         break;
       case 'meta':
       case 'super':
-        modifiers.meta = true;
+        meta = true;
         break;
     }
   }
 
-  return { modifiers, key };
+  return { ctrl, alt, shift, meta, key };
 }
 
 /**
@@ -95,46 +66,30 @@ function normalizeKey(key: string): string {
     'arrowdown': 'down',
     'arrowleft': 'left',
     'arrowright': 'right',
-    'delete': 'backspace', // On some systems
-    'del': 'delete',
-  };
 
+  };
+  
   const normalized = key.toLowerCase();
   return keyMap[normalized] || normalized;
 }
 
 /**
- * Checks if a KeyboardEvent matches an Electron-style match string
- * 
- * @param event - The KeyboardEvent to check
- * @param matchString - The Electron-style match string (e.g., "CmdOrCtrl+N")
- * @returns true if the event matches the match string
+ * Checks if a KeyboardEvent matches an Electron accelerator string
  * 
  * @example
  * ```typescript
- * document.addEventListener('keydown', (event) => {
- *   if (matchesShortcut(event, 'CmdOrCtrl+N')) {
- *     // Handle new file shortcut
- *     event.preventDefault();
- *     createNewFile();
- *   }
- * });
+ * if (matchesShortcut(event, 'CmdOrCtrl+N')) {
+ *   event.preventDefault();
+ *   createNewFile();
+ * }
  * ```
  */
 export function matchesShortcut(event: KeyboardEvent, matchString: string): boolean {
-  const { modifiers, key } = parseMatchString(matchString);
-  const eventKey = normalizeKey(event.key);
-
-  // Check if the main key matches
-  if (eventKey !== key) {
-    return false;
-  }
-
-  // Check modifiers - only compare the ones that matter
-  return (
-    event.ctrlKey === modifiers.ctrl &&
-    event.altKey === modifiers.alt &&
-    event.shiftKey === modifiers.shift &&
-    event.metaKey === modifiers.meta
-  );
+  const { ctrl, alt, shift, meta, key } = parseMatchString(matchString);
+  
+  return normalizeKey(event.key) === key &&
+    event.ctrlKey === ctrl &&
+    event.altKey === alt &&
+    event.shiftKey === shift &&
+    event.metaKey === meta;
 }
