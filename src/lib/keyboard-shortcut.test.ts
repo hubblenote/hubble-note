@@ -267,4 +267,36 @@ describe('keyboard-shortcut', () => {
       expect(matchesShortcut(ctrlEvent, 'CmdOrCtrl+K')).toBe(true);
     });
   });
+
+  describe('delete shortcut across platforms', () => {
+    it('should match CmdOrCtrl+Delete with Cmd+Delete on macOS', () => {
+      Object.defineProperty(navigator, 'platform', {
+        value: 'MacIntel',
+        configurable: true,
+      });
+
+      const event = createKeyboardEvent({ key: 'Delete', metaKey: true });
+      expect(matchesShortcut(event, 'CmdOrCtrl+Delete')).toBe(true);
+    });
+
+    it('should match CmdOrCtrl+Delete with Ctrl+Delete on Windows', () => {
+      Object.defineProperty(navigator, 'platform', {
+        value: 'Win32',
+        configurable: true,
+      });
+
+      const event = createKeyboardEvent({ key: 'Delete', ctrlKey: true });
+      expect(matchesShortcut(event, 'CmdOrCtrl+Delete')).toBe(true);
+    });
+
+    it('should match CmdOrCtrl+Delete with Ctrl+Delete on Linux', () => {
+      Object.defineProperty(navigator, 'platform', {
+        value: 'Linux x86_64',
+        configurable: true,
+      });
+
+      const event = createKeyboardEvent({ key: 'Delete', ctrlKey: true });
+      expect(matchesShortcut(event, 'CmdOrCtrl+Delete')).toBe(true);
+    });
+  });
 });
