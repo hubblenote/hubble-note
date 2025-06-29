@@ -2,7 +2,6 @@ import { keymap } from "prosemirror-keymap";
 import { Plugin, Transaction } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 import { createToggleMarkCommand } from "../commands/toggle-mark";
-import { linkPopoverState } from "../LinkPopoverState.svelte";
 import type { Node } from "prosemirror-model";
 import { createLinkMark, schema } from "../schema";
 import type { Range } from "../types";
@@ -13,12 +12,7 @@ export const linkPlugin = new Plugin({
             return DecorationSet.empty;
         },
         apply(tr, _oldState) {
-            const decorations = getDecorations(tr.doc);
-            if (tr.selectionSet) {
-                const range = getSelectedLinkRange(tr);
-                linkPopoverState.setRange(range);
-            }
-            return decorations;
+            return getDecorations(tr.doc);
         }
     },
     appendTransaction(transactions, _oldState, newState) {
@@ -36,7 +30,7 @@ export const linkPlugin = new Plugin({
     }
 });
 
-function getSelectedLinkRange(tr: Transaction): Range | null {
+export function getSelectedLinkRange(tr: Transaction): Range | null {
     const bracketMatches = getBracketMatches(tr.doc);
     const { selection } = tr;
 
@@ -119,7 +113,7 @@ function updateMarks(tr: Transaction) {
         if (tr.doc.rangeHasMark(match.from, match.to, schema.marks.link)) return;
         const from = tr.mapping.map(match.from);
         const to = tr.mapping.map(match.to);
-        tr.addMark(from, to, createLinkMark(from, to));
+        tr.addMark(from, to, createLinkMark());
     });
 
     return tr;

@@ -11,17 +11,21 @@
 	import { italicPlugin, italicKeymapPlugin } from './plugins/italic';
 	import { underlinePlugin, underlineKeymapPlugin } from './plugins/underline';
 	import { highlightPlugin, highlightKeymapPlugin } from './plugins/highlight';
-	import { linkPlugin, linkKeymapPlugin } from './plugins/link.svelte';
+	import { linkPlugin, linkKeymapPlugin } from './plugins/link';
 	import LinkPopover from './LinkPopover.svelte';
 
-	let editor = $state<HTMLDivElement>();
-
-	// Plugin to handle live markdown bold formatting
+	let editorEl = $state<HTMLDivElement>();
+	let editorState: EditorState | null = $state(null);
+	let editorView: EditorView | null = $state(null);
 
 	$effect(() => {
-		if (!editor) return;
+		if (!editorEl) return;
 
-		const view = new EditorView(editor, {
+		const view = new EditorView(editorEl, {
+			dispatchTransaction: (tr) => {
+				editorState = view.state.apply(tr);
+				view.updateState(editorState);
+			},
 			state: EditorState.create({
 				doc: schema.node('doc', null, [
 					schema.node('paragraph', null, [schema.text('This should be **bold** text')]),
@@ -45,19 +49,24 @@
 			}),
 		});
 
+		editorView = view;
+
 		// Autofocus the editor and position cursor at end
 		setTimeout(() => {
-			const doc = view.state.doc;
+			if (!editorState) return;
+			const doc = editorState.doc;
 			const endPos = doc.content.size;
-			const tr = view.state.tr.setSelection(TextSelection.create(doc, endPos));
+			const tr = editorState.tr.setSelection(TextSelection.create(doc, endPos));
 			view.dispatch(tr);
 			view.focus();
 		}, 0);
 	});
 </script>
 
-<div bind:this={editor}></div>
-<LinkPopover />
+<div bind:this={editorEl}></div>
+{#if editorState && editorView}
+	<LinkPopover {editorState} {editorView} />
+{/if}
 
 <style>
 	:global(.ProseMirror) {

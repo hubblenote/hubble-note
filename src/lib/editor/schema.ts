@@ -1,6 +1,4 @@
-import { Schema } from "prosemirror-model";
-
-const LINK_ID_ATTR = 'data-id';
+import { Mark, Schema } from "prosemirror-model";
 
 export const schema = new Schema({
   nodes: {
@@ -25,9 +23,6 @@ export const schema = new Schema({
         'data-href': {
           default: null,
         },
-        [LINK_ID_ATTR]: {
-          default: null,
-        }
       },
       parseDOM: [
         { tag: 'span', getAttrs: (dom) => ({ 'data-href': dom.getAttribute('data-href') }) },
@@ -41,14 +36,13 @@ export const schema = new Schema({
   }
 });
 
-export function createLinkMark(from: number, to: number) {
-  return schema.marks.link.create({ 'data-href': '#', [LINK_ID_ATTR]: getLinkId(from, to) });
+export function createLinkMark(href = '') {
+  return schema.marks.link.create({ 'data-href': href });
 }
 
-export function getLinkSelector(from: number, to: number) {
-  return `[${LINK_ID_ATTR}="${getLinkId(from, to)}"]`;
-}
 
-function getLinkId(from: number, to: number) {
-  return `link-${from}-${to}`;
+export function getLinkAttrs(mark: Mark) {
+  const href = mark.attrs['data-href'];
+  if (typeof href !== 'string') return null;
+  return { href };
 }
