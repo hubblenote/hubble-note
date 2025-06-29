@@ -4,11 +4,25 @@
 	import { createLinkMark, getLinkAttrs } from './schema';
 	import { getSelectedLinkRange } from './plugins/link';
 	import type { EditorView } from 'prosemirror-view';
+	import { matchesShortcut } from '$lib/keyboard-shortcut';
 
 	let { editorState, editorView }: { editorState: EditorState; editorView: EditorView } = $props();
 
 	let popoverEl = $state<HTMLDivElement | null>(null);
+	let inputEl = $state<HTMLInputElement | null>(null);
 	let link = $derived(getLink());
+	let from = $derived(link?.from);
+	let to = $derived(link?.to);
+	let isManuallyHidden = $state(false);
+
+	$effect(() => {
+		// Reset the user's escape key press whenever the "from" or "to" positions change.
+		// Don't reset on selection change, or it'll reappear as you move your cursor
+		// around the link text. Notion does this, and it's annoying!
+		from;
+		to;
+		isManuallyHidden = false;
+	});
 
 	function getLink() {
 		const linkRange = getSelectedLinkRange(editorState.tr);
@@ -45,6 +59,29 @@
 		editorView.dispatch(tr);
 	}
 
+	function handleFocusInput(event: KeyboardEvent) {
+		if (matchesShortcut(event, 'CmdOrCtrl+L')) {
+			isManuallyHidden = false;
+			queueMicrotask(() => {
+				inputEl?.focus();
+				inputEl?.select();
+			});
+		}
+	}
+
+	function handleHidePopover(event: KeyboardEvent) {
+		const isInputFocused = document.activeElement === inputEl;
+		if (
+			(isInputFocused && matchesShortcut(event, 'Tab')) ||
+			(isInputFocused && matchesShortcut(event, 'Enter')) ||
+			matchesShortcut(event, 'Escape')
+		) {
+			event.preventDefault();
+			editorView.focus();
+			isManuallyHidden = matchesShortcut(event, 'Escape');
+		}
+	}
+
 	$effect(() => {
 		if (!link?.element || !popoverEl) return;
 		computePosition(link.element, popoverEl, {
@@ -57,9 +94,16 @@
 	});
 </script>
 
-{#if link}
+<svelte:window
+	onkeydown={(event) => {
+		handleFocusInput(event);
+		handleHidePopover(event);
+	}}
+/>
+
+{#if link && !isManuallyHidden}
 	<div class="link-popover" bind:this={popoverEl}>
-		<input type="text" value={link.href} oninput={handleInput} />
+		<input type="text" value={link.href} oninput={handleInput} bind:this={inputEl} />
 	</div>
 {/if}
 
