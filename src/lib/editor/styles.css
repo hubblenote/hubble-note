@@ -1,5 +1,6 @@
 .ProseMirror {
     font-size: 4rem;
+    caret-color: transparent; /* Hide the default blinking cursor */
 }
 
 .link-text {
