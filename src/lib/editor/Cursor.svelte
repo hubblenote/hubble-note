@@ -32,8 +32,8 @@
 		height: 1em; /* fallback height */
 		background-color: #28c840;
 		transition-property: left, top;
-		transition-duration: 0.05s;
-		transition-timing-function: cubic-bezier(0.22, 0.08, 0.22, 1);
+		transition-duration: var(--cursor-transition-duration);
+		transition-timing-function: var(--cursor-transition-timing-function);
 		pointer-events: none;
 	}
 

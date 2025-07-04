@@ -5,8 +5,14 @@
 	import { getSelectedLinkRange } from './plugins/link';
 	import type { EditorView } from 'prosemirror-view';
 	import { matchesShortcut } from '$lib/keyboard-shortcut';
+	import type { CursorPosition } from './Cursor.svelte.ts';
 
-	let { editorState, editorView }: { editorState: EditorState; editorView: EditorView } = $props();
+	let {
+		editorState,
+		editorView,
+		cursorPosition,
+	}: { editorState: EditorState; editorView: EditorView; cursorPosition: CursorPosition } =
+		$props();
 
 	let popoverEl = $state<HTMLDivElement | null>(null);
 	let inputEl = $state<HTMLInputElement | null>(null);
@@ -83,14 +89,24 @@
 	}
 
 	$effect(() => {
-		if (!link?.element || !popoverEl) return;
-		computePosition(link.element, popoverEl, {
-			placement: 'top',
-		}).then(({ x, y }) => {
-			if (!popoverEl) return;
-			popoverEl.style.left = `${x}px`;
-			popoverEl.style.top = `${y}px`;
-		});
+		if (!popoverEl) return;
+
+		const rect = cursorPosition.getBoundingClientRect();
+		if (rect) {
+			const virtualElement = {
+				getBoundingClientRect() {
+					return rect;
+				},
+			};
+
+			computePosition(virtualElement, popoverEl, {
+				placement: 'top',
+			}).then(({ x, y }) => {
+				if (!popoverEl) return;
+				popoverEl.style.left = `${x}px`;
+				popoverEl.style.top = `${y}px`;
+			});
+		}
 	});
 </script>
 
@@ -110,10 +126,11 @@
 <style>
 	.link-popover {
 		position: absolute;
-		top: 0;
-		left: 0;
 		border: 1px solid #ccc;
 		border-radius: 4px;
 		min-width: 100px;
+		transition-property: left, top;
+		transition-duration: var(--cursor-transition-duration);
+		transition-timing-function: var(--cursor-transition-timing-function);
 	}
 </style>

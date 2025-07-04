@@ -1,6 +1,7 @@
 .ProseMirror {
     font-size: 4rem;
-    caret-color: transparent; /* Hide the default blinking cursor */
+    caret-color: transparent;
+    /* Hide the default blinking cursor */
 }
 
 .link-text {
@@ -10,4 +11,9 @@
 
 .boundary-attr {
     visibility: hidden;
+}
+
+:root {
+    --cursor-transition-duration: 0.05s;
+    --cursor-transition-timing-function: cubic-bezier(0.22, 0.08, 0.22, 1);
 }
