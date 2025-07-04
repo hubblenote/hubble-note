@@ -57,16 +57,16 @@
 		});
 
 		editorView = view;
+	});
 
-		// Autofocus the editor and position cursor at end
-		setTimeout(() => {
-			if (!editorState) return;
-			const doc = editorState.doc;
-			const endPos = doc.content.size;
-			const tr = editorState.tr.setSelection(TextSelection.create(doc, endPos));
-			view.dispatch(tr);
-			view.focus();
-		}, 0);
+	// Autofocus the editor and position cursor at end
+	$effect(() => {
+		if (!editorView) return;
+		const doc = editorView.state.doc;
+		const endPos = doc.content.size;
+		const tr = editorView.state.tr.setSelection(TextSelection.create(doc, endPos));
+		editorView.dispatch(tr);
+		editorView.focus();
 	});
 </script>
 
