@@ -27,7 +27,7 @@
 <style>
 	.cursor {
 		position: absolute;
-		width: 4px;
+		width: 0.15em;
 		border-radius: 2px;
 		height: 1em; /* fallback height */
 		background-color: #28c840;
