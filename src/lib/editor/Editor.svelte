@@ -57,16 +57,15 @@
 		});
 
 		editorView = view;
-	});
 
-	// Autofocus the editor and position cursor at end
-	$effect(() => {
-		if (!editorView) return;
-		const doc = editorView.state.doc;
-		const endPos = doc.content.size;
-		const tr = editorView.state.tr.setSelection(TextSelection.create(doc, endPos));
-		editorView.dispatch(tr);
-		editorView.focus();
+		// Autofocus and position cursor at end once view is ready
+		queueMicrotask(() => {
+			const doc = view.state.doc;
+			const endPos = doc.content.size - 1;
+			const tr = view.state.tr.setSelection(TextSelection.create(doc, endPos));
+			view.dispatch(tr);
+			view.focus();
+		});
 	});
 </script>
 
