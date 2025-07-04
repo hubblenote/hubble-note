@@ -71,7 +71,7 @@
 </script>
 
 <div bind:this={editorEl}></div>
-{#if editorState && editorView && cursorPosition}
+{#if editorState && editorView && cursorPosition && editorState.selection.empty}
 	<LinkPopover {editorState} {editorView} {cursorPosition} />
 	<Cursor {cursorPosition} />
 {/if}
