@@ -23,8 +23,9 @@
 
 		const view = new EditorView(editorEl, {
 			dispatchTransaction: (tr) => {
-				editorState = view.state.apply(tr);
-				view.updateState(editorState);
+				const state = view.state.apply(tr);
+				view.updateState(state);
+				editorState = state;
 			},
 			state: EditorState.create({
 				doc: schema.node('doc', null, [
