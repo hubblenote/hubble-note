@@ -4,6 +4,10 @@
     /* Hide the default blinking cursor */
 }
 
+.ProseMirror ::selection {
+    background-color: rgba(40, 200, 64, 0.3);
+}
+
 .link-text {
     color: #565656;
     text-decoration: underline;
