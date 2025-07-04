@@ -13,10 +13,16 @@
 	import { highlightPlugin, highlightKeymapPlugin } from './plugins/highlight';
 	import { linkPlugin, linkKeymapPlugin } from './plugins/link';
 	import LinkPopover from './LinkPopover.svelte';
+	import Cursor from './Cursor.svelte';
+	import { CursorPosition } from './Cursor.svelte.ts';
 
 	let editorEl = $state<HTMLDivElement>();
 	let editorState: EditorState | null = $state(null);
 	let editorView: EditorView | null = $state(null);
+	let cursorPosition = $derived.by(() => {
+		if (!editorView || !editorState) return null;
+		return new CursorPosition(editorView, editorState);
+	});
 
 	$effect(() => {
 		if (!editorEl) return;
@@ -67,6 +73,9 @@
 <div bind:this={editorEl}></div>
 {#if editorState && editorView}
 	<LinkPopover {editorState} {editorView} />
+{/if}
+{#if cursorPosition}
+	<Cursor {cursorPosition} />
 {/if}
 
 <style>
