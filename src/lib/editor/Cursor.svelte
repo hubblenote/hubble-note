@@ -8,7 +8,7 @@
 	// Get cursor position, avoiding multiple calls
 	$effect(() => {
 		if (cursorEl) {
-			const rect = cursorPosition.getBoundingClientRect();
+			const rect = cursorPosition.getBoundingClientRect(true);
 			if (rect) {
 				cursorEl.style.left = `${rect.left}px`;
 				cursorEl.style.top = `${rect.top}px`;
