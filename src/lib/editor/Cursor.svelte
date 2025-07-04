@@ -3,6 +3,7 @@
 
 	let { cursorPosition }: { cursorPosition: CursorPosition } = $props();
 	let cursorEl = $state<HTMLSpanElement | null>(null);
+	let isIdle = $state(true);
 
 	// Get cursor position, avoiding multiple calls
 	$effect(() => {
@@ -12,32 +13,41 @@
 				cursorEl.style.left = `${rect.left}px`;
 				cursorEl.style.top = `${rect.top}px`;
 				cursorEl.style.height = `${rect.height}px`;
+				isIdle = false;
+				setTimeout(() => {
+					isIdle = true;
+				}, 500);
 			}
 		}
 	});
 </script>
 
-<span
-	class="cursor"
-	bind:this={cursorEl}
-></span>
+<span class="cursor" class:idle={isIdle} bind:this={cursorEl}></span>
 
 <style>
 	.cursor {
 		position: absolute;
-		width: 2px;
+		width: 4px;
+		border-radius: 2px;
 		height: 1em; /* fallback height */
 		background-color: #28c840;
-		transition:
-			left 0.15s ease-in-out,
-			top 0.15s ease-in-out;
-		animation: blink 1s infinite;
+		transition-property: left, top;
+		transition-duration: 0.05s;
+		transition-timing-function: cubic-bezier(0.22, 0.08, 0.22, 1);
 		pointer-events: none;
-		z-index: 1000;
+	}
+
+	.cursor.idle {
+		animation: blink 1s infinite;
 	}
 
 	@keyframes blink {
-		0%, 50% { opacity: 1; }
-		51%, 100% { opacity: 0; }
+		0%,
+		50% {
+			opacity: 1;
+		}
+		100% {
+			opacity: 0;
+		}
 	}
 </style>
