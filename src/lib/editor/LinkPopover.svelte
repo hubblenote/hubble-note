@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { computePosition } from '@floating-ui/dom';
+	import { computePosition, shift } from '@floating-ui/dom';
 	import type { EditorState } from 'prosemirror-state';
 	import { createLinkMark, getLinkAttrs } from './schema';
 	import { getSelectedLinkRange } from './plugins/link';
@@ -116,6 +116,7 @@
 
 			computePosition(virtualElement, popoverEl, {
 				placement: 'top',
+				middleware: [shift()],
 			}).then(({ x, y }) => {
 				if (!popoverEl) return;
 				popoverEl.style.left = `${x}px`;
