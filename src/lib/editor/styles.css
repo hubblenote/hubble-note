@@ -21,3 +21,15 @@
     --cursor-transition-duration: 0.05s;
     --cursor-transition-timing-function: cubic-bezier(0.22, 0.08, 0.22, 1);
 }
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}

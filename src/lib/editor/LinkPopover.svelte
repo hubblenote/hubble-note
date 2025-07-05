@@ -6,6 +6,8 @@
 	import type { EditorView } from 'prosemirror-view';
 	import { matchesShortcut } from '$lib/keyboard-shortcut';
 	import type { CursorPosition } from './Cursor.svelte.ts';
+	import Icon from '@iconify/svelte';
+	import { openUrl } from '@tauri-apps/plugin-opener';
 
 	let {
 		editorState,
@@ -65,7 +67,7 @@
 		editorView.dispatch(tr);
 	}
 
-	function handleFocusInput(event: KeyboardEvent) {
+	function handleGlobalFocusInput(event: KeyboardEvent) {
 		if (matchesShortcut(event, 'Tab')) {
 			event.preventDefault();
 			isManuallyHidden = false;
@@ -76,13 +78,25 @@
 		}
 	}
 
-	function handleHidePopover(event: KeyboardEvent) {
+	function handleGlobalHidePopover(event: KeyboardEvent) {
 		const isInputFocused = document.activeElement === inputEl;
 		if ((isInputFocused && matchesShortcut(event, 'Enter')) || matchesShortcut(event, 'Escape')) {
 			event.preventDefault();
 			editorView.focus();
 			isManuallyHidden = matchesShortcut(event, 'Escape');
 		}
+	}
+
+	function handleGlobalVisitLink(event: KeyboardEvent) {
+		if (matchesShortcut(event, 'Tab') && document.activeElement === inputEl) {
+			event.preventDefault();
+			handleVisitLink();
+		}
+	}
+
+	function handleVisitLink() {
+		if (!link) return;
+		openUrl(link.href);
 	}
 
 	$effect(() => {
@@ -109,14 +123,19 @@
 
 <svelte:window
 	onkeydown={(event) => {
-		handleFocusInput(event);
-		handleHidePopover(event);
+		handleGlobalFocusInput(event);
+		handleGlobalHidePopover(event);
+		handleGlobalVisitLink(event);
 	}}
 />
 
 {#if link && !isManuallyHidden}
 	<div class="link-popover" bind:this={popoverEl}>
 		<input type="text" value={link.href} oninput={handleInput} bind:this={inputEl} />
+		<button onclick={handleVisitLink}>
+			<span class="sr-only">Visit link</span>
+			<Icon icon="mingcute:arrow-right-fill" />
+		</button>
 	</div>
 {/if}
 
