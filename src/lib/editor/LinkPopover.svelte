@@ -66,7 +66,8 @@
 	}
 
 	function handleFocusInput(event: KeyboardEvent) {
-		if (matchesShortcut(event, 'CmdOrCtrl+L')) {
+		if (matchesShortcut(event, 'Tab')) {
+			event.preventDefault();
 			isManuallyHidden = false;
 			queueMicrotask(() => {
 				inputEl?.focus();
@@ -77,11 +78,7 @@
 
 	function handleHidePopover(event: KeyboardEvent) {
 		const isInputFocused = document.activeElement === inputEl;
-		if (
-			(isInputFocused && matchesShortcut(event, 'Tab')) ||
-			(isInputFocused && matchesShortcut(event, 'Enter')) ||
-			matchesShortcut(event, 'Escape')
-		) {
+		if ((isInputFocused && matchesShortcut(event, 'Enter')) || matchesShortcut(event, 'Escape')) {
 			event.preventDefault();
 			editorView.focus();
 			isManuallyHidden = matchesShortcut(event, 'Escape');
