@@ -21,7 +21,7 @@
 	let link = $derived(getLink());
 	let from = $derived(link?.from);
 	let to = $derived(link?.to);
-	let isManuallyHidden = $state(false);
+	let status = $state<'idle' | 'focused' | 'hidden'>('idle');
 
 	$effect(() => {
 		// Reset the user's escape key press whenever the "from" or "to" positions change.
@@ -29,7 +29,7 @@
 		// around the link text. Notion does this, and it's annoying!
 		from;
 		to;
-		isManuallyHidden = false;
+		status = 'idle';
 	});
 
 	function getLink() {
@@ -70,7 +70,7 @@
 	function handleGlobalFocusInput(event: KeyboardEvent) {
 		if (matchesShortcut(event, 'Tab')) {
 			event.preventDefault();
-			isManuallyHidden = false;
+			status = 'focused';
 			queueMicrotask(() => {
 				inputEl?.focus();
 				inputEl?.select();
@@ -87,7 +87,7 @@
 			editorView.focus();
 		} else if (editorFocused && matchesShortcut(event, 'Escape')) {
 			event.preventDefault();
-			isManuallyHidden = true;
+			status = 'hidden';
 		}
 	}
 
@@ -133,11 +133,24 @@
 	}}
 />
 
-{#if link && !isManuallyHidden}
-	<div class="link-popover" bind:this={popoverEl}>
-		<input type="text" value={link.href} oninput={handleInput} bind:this={inputEl} />
+{#if link && status !== 'hidden'}
+	<div
+		class="link-popover"
+		bind:this={popoverEl}
+		onfocusin={() => (status = 'focused')}
+		onfocusout={() => (status = 'idle')}
+	>
+		<div class="input-container">
+			{#if status === 'idle'}
+				<span class="tab-label input-tab-label">Tab</span>
+			{/if}
+			<input type="text" value={link.href} oninput={handleInput} bind:this={inputEl} />
+		</div>
 		<button onclick={handleVisitLink}>
 			<span class="sr-only">Visit link</span>
+			{#if status === 'focused'}
+				<span class="tab-label">Tab</span>
+			{/if}
 			<Icon icon="mingcute:arrow-right-fill" />
 		</button>
 	</div>
@@ -148,11 +161,50 @@
 		position: absolute;
 		border: 1px solid #ccc;
 		border-radius: 4px;
-		min-width: 100px;
+		width: 200px;
+		display: flex;
+		align-items: center;
 		transition:
 			translate 0.15s var(--cursor-transition-timing-function),
 			left var(--cursor-transition-duration) var(--cursor-transition-timing-function),
 			top var(--cursor-transition-duration) var(--cursor-transition-timing-function);
+	}
+
+	.input-container {
+		position: relative;
+		flex: 1;
+	}
+
+	button {
+		flex-shrink: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 4px;
+		line-height: 1;
+	}
+
+	input {
+		width: 100%;
+	}
+
+	.tab-label {
+		font-size: 11px;
+		font-weight: 500;
+	}
+
+	.input-tab-label {
+		position: absolute;
+		top: 1px;
+		bottom: 1px;
+		right: 4px;
+		color: #707170;
+		background-color: #eff3f0;
+		padding: 2px 4px;
+		border-radius: 2px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 
 	.link-popover:focus-within {
