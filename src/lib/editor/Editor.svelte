@@ -19,6 +19,8 @@
 	let editorEl = $state<HTMLDivElement>();
 	let editorState: EditorState | null = $state(null);
 	let editorView: EditorView | null = $state(null);
+	let isEditorFocused = $state(false);
+
 	let cursorPosition = $derived.by(() => {
 		if (!editorView || !editorState) return null;
 		return new CursorPosition(editorView, editorState);
@@ -69,10 +71,14 @@
 	});
 </script>
 
-<div bind:this={editorEl}></div>
+<div
+	bind:this={editorEl}
+	onfocusin={() => (isEditorFocused = true)}
+	onfocusout={() => (isEditorFocused = false)}
+></div>
 {#if editorState && editorView && cursorPosition && editorState.selection.empty}
 	<LinkPopover {editorState} {editorView} {cursorPosition} />
-	<Cursor {cursorPosition} />
+	<Cursor {cursorPosition} {isEditorFocused} />
 {/if}
 
 <style>

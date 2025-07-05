@@ -1,7 +1,10 @@
 <script lang="ts">
 	import type { CursorPosition } from './Cursor.svelte.ts';
 
-	let { cursorPosition }: { cursorPosition: CursorPosition } = $props();
+	let {
+		cursorPosition,
+		isEditorFocused,
+	}: { cursorPosition: CursorPosition; isEditorFocused: boolean } = $props();
 	let cursorEl = $state<HTMLSpanElement | null>(null);
 	let isIdle = $state(true);
 
@@ -22,7 +25,7 @@
 	});
 </script>
 
-<span class="cursor" class:idle={isIdle} bind:this={cursorEl}></span>
+<span class="cursor" class:idle={isIdle && isEditorFocused} bind:this={cursorEl}></span>
 
 <style>
 	.cursor {
