@@ -162,9 +162,11 @@
 		position: absolute;
 		border: 1px solid #ccc;
 		border-radius: 4px;
-		width: 200px;
+		width: calc(200px * var(--font-scale) * 0.75);
 		display: flex;
 		align-items: center;
+		font-size: var(--font-size-sm);
+		background-color: #fff;
 		transition:
 			translate 0.15s var(--cursor-transition-timing-function),
 			left var(--cursor-transition-duration) var(--cursor-transition-timing-function),
@@ -187,18 +189,19 @@
 
 	input {
 		width: 100%;
+		height: 100%;
 	}
 
 	.tab-label {
-		font-size: 11px;
+		font-size: var(--font-size-xs);
 		font-weight: 500;
 	}
 
 	.input-tab-label {
 		position: absolute;
-		top: 1px;
-		bottom: 1px;
-		right: 4px;
+		top: 10%;
+		bottom: 10%;
+		right: 1%;
 		color: #707170;
 		background-color: #eff3f0;
 		padding: 2px 4px;

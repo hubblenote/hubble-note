@@ -34,7 +34,7 @@
 <style>
 	.cursor {
 		position: absolute;
-		width: 0.15em;
+		width: calc(0.05em * var(--font-scale));
 		border-radius: 2px;
 		height: 1em; /* fallback height */
 		background-color: #28c840;
@@ -47,7 +47,7 @@
 	}
 
 	.cursor.collapsed-into-popover {
-		transform: scaleY(0.1) translateY(-30%);
+		transform: scaleY(0.1) translateY(-35%);
 		z-index: -1;
 	}
 
