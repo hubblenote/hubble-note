@@ -80,10 +80,14 @@
 
 	function handleGlobalHidePopover(event: KeyboardEvent) {
 		const isInputFocused = document.activeElement === inputEl;
-		if ((isInputFocused && matchesShortcut(event, 'Enter')) || matchesShortcut(event, 'Escape')) {
+		const editorFocused = document.activeElement === editorView.dom;
+
+		if (isInputFocused && (matchesShortcut(event, 'Enter') || matchesShortcut(event, 'Escape'))) {
 			event.preventDefault();
 			editorView.focus();
-			isManuallyHidden = matchesShortcut(event, 'Escape');
+		} else if (editorFocused && matchesShortcut(event, 'Escape')) {
+			event.preventDefault();
+			isManuallyHidden = true;
 		}
 	}
 
