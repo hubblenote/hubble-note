@@ -8,7 +8,6 @@
 	let cursorEl = $state<HTMLSpanElement | null>(null);
 	let isIdle = $state(true);
 
-	// Get cursor position, avoiding multiple calls
 	$effect(() => {
 		if (cursorEl) {
 			const rect = cursorPosition.getBoundingClientRect(true);
@@ -25,7 +24,12 @@
 	});
 </script>
 
-<span class="cursor" class:idle={isIdle && isEditorFocused} bind:this={cursorEl}></span>
+<span
+	class="cursor"
+	class:collapsed-into-popover={!isEditorFocused}
+	class:idle={isIdle && isEditorFocused}
+	bind:this={cursorEl}
+></span>
 
 <style>
 	.cursor {
@@ -34,10 +38,17 @@
 		border-radius: 2px;
 		height: 1em; /* fallback height */
 		background-color: #28c840;
-		transition-property: left, top;
-		transition-duration: var(--cursor-transition-duration);
-		transition-timing-function: var(--cursor-transition-timing-function);
+		transition:
+			transform 0.15s var(--cursor-transition-timing-function),
+			left var(--cursor-transition-duration) var(--cursor-transition-timing-function),
+			top var(--cursor-transition-duration) var(--cursor-transition-timing-function);
 		pointer-events: none;
+		transform-origin: top;
+	}
+
+	.cursor.collapsed-into-popover {
+		transform: scaleY(0.1) translateY(-30%);
+		z-index: -1;
 	}
 
 	.cursor.idle {

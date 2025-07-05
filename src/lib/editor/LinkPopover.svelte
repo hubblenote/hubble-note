@@ -149,8 +149,13 @@
 		border: 1px solid #ccc;
 		border-radius: 4px;
 		min-width: 100px;
-		transition-property: left, top;
-		transition-duration: var(--cursor-transition-duration);
-		transition-timing-function: var(--cursor-transition-timing-function);
+		transition:
+			translate 0.15s var(--cursor-transition-timing-function),
+			left var(--cursor-transition-duration) var(--cursor-transition-timing-function),
+			top var(--cursor-transition-duration) var(--cursor-transition-timing-function);
+	}
+
+	.link-popover:focus-within {
+		translate: 0 -4px;
 	}
 </style>
