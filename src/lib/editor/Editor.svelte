@@ -12,6 +12,7 @@
 	import { underlinePlugin, underlineKeymapPlugin } from './plugins/underline';
 	import { highlightPlugin, highlightKeymapPlugin } from './plugins/highlight';
 	import { linkPlugin, linkKeymapPlugin } from './plugins/link';
+	import { headingPlugin } from './plugins/heading';
 	import LinkPopover from './LinkPopover.svelte';
 	import Cursor from './Cursor.svelte';
 	import { CursorPosition } from './Cursor.svelte.ts';
@@ -51,6 +52,7 @@
 					underlineKeymapPlugin,
 					highlightKeymapPlugin,
 					linkKeymapPlugin,
+					headingPlugin,
 					history(),
 					keymap({ 'Mod-z': undo, 'Mod-y': redo }),
 					keymap(baseKeymap),
