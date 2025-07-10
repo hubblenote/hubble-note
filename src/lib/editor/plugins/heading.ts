@@ -49,22 +49,22 @@ function getDecorations(doc: Node) {
 
 function updateHeadings(tr: Transaction) {
     tr.doc.descendants((node, pos) => {
-        if (!node.isText) return true;
+        // Check if node is immediate parent of inline content
+        if (!node.inlineContent) return true;
 
-        const text = node.text ?? '';
-        const { parent, depth } = tr.doc.resolve(pos);
+        const text = node.textContent ?? '';
         const headingPrefix = text.match(/^#+ /)?.[0];
         const headingLevel = (headingPrefix?.length ?? 0) - 1;
 
         if (headingLevel < 1 || headingLevel > 6) {
-            if (parent.type.name === 'heading') {
+            if (node.type.name === 'heading') {
                 // Remove heading when the headingLevel string no longer matches
-                tr.setNodeMarkup(tr.mapping.map(pos - depth), schema.nodes.paragraph);
+                tr.setNodeMarkup(tr.mapping.map(pos), schema.nodes.paragraph);
             }
             return true;
         }
 
-        tr.setNodeMarkup(tr.mapping.map(pos - depth), schema.nodes.heading, {
+        tr.setNodeMarkup(tr.mapping.map(pos), schema.nodes.heading, {
             level: headingLevel,
         });
 
@@ -75,7 +75,6 @@ function updateHeadings(tr: Transaction) {
 
 function createToggleHeadingCommand(level: number) {
     return (state: EditorState, dispatch?: (tr: Transaction) => void) => {
-        console.log('createToggleHeadingCommand', level);
         if (!dispatch) return false;
         const { tr, selection } = state;
         const newHeadingPrefix = '#'.repeat(level) + ' ';
