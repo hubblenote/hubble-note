@@ -27,6 +27,7 @@ export const headingPlugin = new Plugin({
 function getDecorations(doc: Node) {
     const decorations: Decoration[] = [];
     doc.descendants((node, pos) => {
+        const textPos = pos + 1;
         if (node.type.name === 'heading') {
             if (typeof node.attrs.level !== 'number') {
                 console.warn('Heading level is not a number. Skipping decoration.', node.attrs.level);
@@ -34,8 +35,7 @@ function getDecorations(doc: Node) {
                 console.warn('Heading level is out of range. Skipping decoration.', node.attrs.level);
             } else {
                 decorations.push(
-                    // Add one to enter text contents
-                    Decoration.inline(pos + 1, pos + node.attrs.level + 1, {
+                    Decoration.inline(textPos, textPos + node.attrs.level, {
                         class: 'boundary-decorator',
                     }, { type: 'marker' }),
                 );
