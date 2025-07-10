@@ -96,7 +96,11 @@ function createToggleHeadingCommand(level: number) {
                     return false;
                 }
                 tr.delete(tr.mapping.map(textPos), tr.mapping.map(textPos + headingPrefix.length));
-                tr.insertText(newHeadingPrefix, tr.mapping.map(textPos));
+                // If that heading level is already applied, we should remove it (toggle off)
+                // Otherwise, we should set the new heading level (toggle on)
+                if (newHeadingPrefix !== headingPrefix) {
+                    tr.insertText(newHeadingPrefix, tr.mapping.map(textPos));
+                }
                 return false;
             }
 
