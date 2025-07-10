@@ -80,26 +80,28 @@ function createToggleHeadingCommand(level: number) {
         const { tr, selection } = state;
         const newHeadingPrefix = '#'.repeat(level) + ' ';
         tr.doc.descendants((node, pos) => {
-            if (!node.isText) return true;
+            // Check if node is immediate parent of inline content
+            if (!node.inlineContent) return true;
+
             const isFromWithinNode = selection.from >= pos && selection.from < pos + node.nodeSize;
             const isToWithinNode = selection.to > pos && selection.to <= pos + node.nodeSize;
             if (!isFromWithinNode && !isToWithinNode) return true;
 
-            const text = node.text ?? '';
-            const { parent } = tr.doc.resolve(pos);
-            const isHeading = parent.type.name === 'heading';
+            const isHeading = node.type.name === 'heading';
+            const textPos = pos + 1;
+            const text = node.textContent ?? '';
             if (isHeading) {
                 const headingPrefix = text.match(/^#+ /)?.[0];
                 if (!headingPrefix) {
                     console.warn(`Heading element found without heading prefix. Position: ${pos}`);
-                    return true;
+                    return false;
                 }
-                tr.delete(tr.mapping.map(pos), tr.mapping.map(pos + headingPrefix.length));
-                tr.insertText(newHeadingPrefix, tr.mapping.map(pos));
+                tr.delete(tr.mapping.map(textPos), tr.mapping.map(textPos + headingPrefix.length));
+                tr.insertText(newHeadingPrefix, tr.mapping.map(textPos));
                 return false;
             }
 
-            tr.insertText(newHeadingPrefix, tr.mapping.map(pos));
+            tr.insertText(newHeadingPrefix, tr.mapping.map(textPos));
             return false;
         });
         dispatch?.(tr);
