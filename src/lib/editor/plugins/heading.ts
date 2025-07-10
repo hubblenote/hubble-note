@@ -1,7 +1,8 @@
-import { Plugin, Transaction } from "prosemirror-state";
+import { EditorState, Plugin, Transaction } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 import type { Node } from "prosemirror-model";
 import { schema } from "../schema";
+import { keymap } from "prosemirror-keymap";
 
 export const headingPlugin = new Plugin({
     state: {
@@ -71,3 +72,42 @@ function updateHeadings(tr: Transaction) {
     });
     return tr;
 }
+
+function createToggleHeadingCommand(level: number) {
+    return (state: EditorState, dispatch?: (tr: Transaction) => void) => {
+        console.log('createToggleHeadingCommand', level);
+        if (!dispatch) return false;
+        const { tr, selection } = state;
+        const newHeadingPrefix = '#'.repeat(level) + ' ';
+        tr.doc.descendants((node, pos) => {
+            if (!node.isText) return true;
+            const isFromWithinNode = selection.from >= pos && selection.from < pos + node.nodeSize;
+            const isToWithinNode = selection.to > pos && selection.to <= pos + node.nodeSize;
+            if (!isFromWithinNode && !isToWithinNode) return true;
+
+            const text = node.text ?? '';
+            const { parent } = tr.doc.resolve(pos);
+            const isHeading = parent.type.name === 'heading';
+            if (isHeading) {
+                const headingPrefix = text.match(/^#+ /)?.[0];
+                if (!headingPrefix) {
+                    console.warn(`Heading element found without heading prefix. Position: ${pos}`);
+                    return true;
+                }
+                tr.delete(tr.mapping.map(pos), tr.mapping.map(pos + headingPrefix.length));
+                tr.insertText(newHeadingPrefix, tr.mapping.map(pos));
+                return false;
+            }
+
+            tr.insertText(newHeadingPrefix, tr.mapping.map(pos));
+            return false;
+        });
+        dispatch?.(tr);
+        return true;
+    }
+}
+export const headingKeymapPlugin = keymap({
+    'mod-alt-1': createToggleHeadingCommand(1),
+    'mod-alt-2': createToggleHeadingCommand(2),
+    'mod-alt-3': createToggleHeadingCommand(3),
+});
