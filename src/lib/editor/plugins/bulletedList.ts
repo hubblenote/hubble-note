@@ -32,7 +32,7 @@ export const bulletedListPlugin = new Plugin({
                 const listItemNode = resolvedPos.node(resolvedPos.depth);
 
                 // Go up in depth by 1 to get the bulletedList properties
-                const bulletedListNode = resolvedPos.parent;
+                const bulletedListNode = resolvedPos.node(-1);
                 const bulletedListPos = resolvedPos.start(-1) - 1;
                 // Index within parent. Used to find list items before and after
                 const listItemIndex = resolvedPos.index(-1);
@@ -41,7 +41,6 @@ export const bulletedListPlugin = new Plugin({
                     return false;
                 }
 
-                // Split the bulletedList
                 const beforeItems = [];
                 const afterItems = [];
 
@@ -56,15 +55,12 @@ export const bulletedListPlugin = new Plugin({
                 // Build replacement nodes
                 const replacements = [];
 
-                // Add bulletedList with items before (if any)
                 if (beforeItems.length > 0) {
                     replacements.push(schema.node('bulletedList', null, beforeItems));
                 }
 
-                // Add the converted paragraph
                 replacements.push(schema.node('paragraph', null, listItemNode.content));
 
-                // Add bulletedList with items after (if any)
                 if (afterItems.length > 0) {
                     replacements.push(schema.node('bulletedList', null, afterItems));
                 }
