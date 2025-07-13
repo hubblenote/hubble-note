@@ -17,7 +17,7 @@ function parseMatchString(matchString: string) {
   if (!key) {
     throw new Error(`Invalid accelerator: ${matchString}`);
   }
-  
+
   const modifierParts = parts.slice(0, -1).map(part => part.toLowerCase());
   let ctrl = false, alt = false, shift = false, meta = false;
 
@@ -68,7 +68,7 @@ function normalizeKey(key: string): string {
     'arrowright': 'right',
 
   };
-  
+
   const normalized = key.toLowerCase();
   return keyMap[normalized] || normalized;
 }
@@ -84,9 +84,9 @@ function normalizeKey(key: string): string {
  * }
  * ```
  */
-export function matchesShortcut(event: KeyboardEvent, matchString: string): boolean {
+export function keymatch(event: KeyboardEvent, matchString: string): boolean {
   const { ctrl, alt, shift, meta, key } = parseMatchString(matchString);
-  
+
   return normalizeKey(event.key) === key &&
     event.ctrlKey === ctrl &&
     event.altKey === alt &&

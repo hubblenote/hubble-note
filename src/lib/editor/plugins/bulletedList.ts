@@ -3,7 +3,7 @@ import { Decoration, DecorationSet } from "prosemirror-view";
 import type { Node } from "prosemirror-model";
 import { schema } from "../schema";
 import { keymap } from "prosemirror-keymap";
-import { matchesShortcut } from "$lib/keyboard-shortcut";
+import { keymatch } from "$lib/keymatch";
 
 export const bulletedListPlugin = new Plugin({
     state: {
@@ -22,7 +22,7 @@ export const bulletedListPlugin = new Plugin({
         handleKeyDown(view, event) {
             const resolvedPos = view.state.doc.resolve(view.state.selection.head);
             const isInListItem = resolvedPos.node(resolvedPos.depth)?.type.name === 'listItem';
-            // if (matchesShortcut(event, 'enter') && isInListItem) {
+            // if (keymatch(event, 'enter') && isInListItem) {
             //     let tr = view.state.tr.insert(view.state.selection.head, schema.node('paragraph', null, [
             //         schema.text('- ')
             //     ]));

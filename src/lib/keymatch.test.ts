@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { matchesShortcut } from './keyboard-shortcut';
+import { keymatch } from './keymatch';
 
 // Helper function to create a mock KeyboardEvent
 function createKeyboardEvent(options: {
@@ -32,29 +32,29 @@ describe('keyboard-shortcut', () => {
     describe('single key', () => {
       it('should match single key "R"', () => {
         const event = createKeyboardEvent({ key: 'r' });
-        expect(matchesShortcut(event, 'R')).toBe(true);
+        expect(keymatch(event, 'R')).toBe(true);
       });
 
       it('should match single key "R" case-insensitive', () => {
         const event = createKeyboardEvent({ key: 'R' });
-        expect(matchesShortcut(event, 'r')).toBe(true);
+        expect(keymatch(event, 'r')).toBe(true);
       });
 
       it('should not match single key "R" when other modifiers are pressed', () => {
         const event = createKeyboardEvent({ key: 'r', ctrlKey: true });
-        expect(matchesShortcut(event, 'R')).toBe(false);
+        expect(keymatch(event, 'R')).toBe(false);
       });
 
       it('should not match different single key', () => {
         const event = createKeyboardEvent({ key: 'r' });
-        expect(matchesShortcut(event, 'S')).toBe(false);
+        expect(keymatch(event, 'S')).toBe(false);
       });
     });
 
     describe('CmdOrCtrl modifier', () => {
       it('should match "CmdOrCtrl+K" with Cmd on macOS', () => {
         const event = createKeyboardEvent({ key: 'k', metaKey: true });
-        expect(matchesShortcut(event, 'CmdOrCtrl+K')).toBe(true);
+        expect(keymatch(event, 'CmdOrCtrl+K')).toBe(true);
       });
 
       it('should match "CmdOrCtrl+K" with Ctrl on Windows/Linux', () => {
@@ -65,22 +65,22 @@ describe('keyboard-shortcut', () => {
         });
 
         const event = createKeyboardEvent({ key: 'k', ctrlKey: true });
-        expect(matchesShortcut(event, 'CmdOrCtrl+K')).toBe(true);
+        expect(keymatch(event, 'CmdOrCtrl+K')).toBe(true);
       });
 
       it('should not match "CmdOrCtrl+K" without any modifier', () => {
         const event = createKeyboardEvent({ key: 'k' });
-        expect(matchesShortcut(event, 'CmdOrCtrl+K')).toBe(false);
+        expect(keymatch(event, 'CmdOrCtrl+K')).toBe(false);
       });
 
       it('should not match "CmdOrCtrl+K" with wrong key', () => {
         const event = createKeyboardEvent({ key: 'j', metaKey: true });
-        expect(matchesShortcut(event, 'CmdOrCtrl+K')).toBe(false);
+        expect(keymatch(event, 'CmdOrCtrl+K')).toBe(false);
       });
 
       it('should not match "CmdOrCtrl+K" with additional unwanted modifiers', () => {
         const event = createKeyboardEvent({ key: 'k', metaKey: true, altKey: true });
-        expect(matchesShortcut(event, 'CmdOrCtrl+K')).toBe(false);
+        expect(keymatch(event, 'CmdOrCtrl+K')).toBe(false);
       });
     });
 
@@ -91,7 +91,7 @@ describe('keyboard-shortcut', () => {
           metaKey: true,
           shiftKey: true
         });
-        expect(matchesShortcut(event, 'CmdOrCtrl+Shift+J')).toBe(true);
+        expect(keymatch(event, 'CmdOrCtrl+Shift+J')).toBe(true);
       });
 
       it('should match "CmdOrCtrl+Shift+J" with Ctrl+Shift on Windows/Linux', () => {
@@ -106,17 +106,17 @@ describe('keyboard-shortcut', () => {
           ctrlKey: true,
           shiftKey: true
         });
-        expect(matchesShortcut(event, 'CmdOrCtrl+Shift+J')).toBe(true);
+        expect(keymatch(event, 'CmdOrCtrl+Shift+J')).toBe(true);
       });
 
       it('should not match "CmdOrCtrl+Shift+J" without Shift', () => {
         const event = createKeyboardEvent({ key: 'J', metaKey: true });
-        expect(matchesShortcut(event, 'CmdOrCtrl+Shift+J')).toBe(false);
+        expect(keymatch(event, 'CmdOrCtrl+Shift+J')).toBe(false);
       });
 
       it('should not match "CmdOrCtrl+Shift+J" without CmdOrCtrl', () => {
         const event = createKeyboardEvent({ key: 'J', shiftKey: true });
-        expect(matchesShortcut(event, 'CmdOrCtrl+Shift+J')).toBe(false);
+        expect(keymatch(event, 'CmdOrCtrl+Shift+J')).toBe(false);
       });
 
       it('should not match "CmdOrCtrl+Shift+J" with wrong key', () => {
@@ -125,24 +125,24 @@ describe('keyboard-shortcut', () => {
           metaKey: true,
           shiftKey: true
         });
-        expect(matchesShortcut(event, 'CmdOrCtrl+Shift+J')).toBe(false);
+        expect(keymatch(event, 'CmdOrCtrl+Shift+J')).toBe(false);
       });
     });
 
     describe('Alt modifier', () => {
       it('should match "Alt+G"', () => {
         const event = createKeyboardEvent({ key: 'g', altKey: true });
-        expect(matchesShortcut(event, 'Alt+G')).toBe(true);
+        expect(keymatch(event, 'Alt+G')).toBe(true);
       });
 
       it('should not match "Alt+G" without Alt', () => {
         const event = createKeyboardEvent({ key: 'g' });
-        expect(matchesShortcut(event, 'Alt+G')).toBe(false);
+        expect(keymatch(event, 'Alt+G')).toBe(false);
       });
 
       it('should not match "Alt+G" with wrong key', () => {
         const event = createKeyboardEvent({ key: 'h', altKey: true });
-        expect(matchesShortcut(event, 'Alt+G')).toBe(false);
+        expect(keymatch(event, 'Alt+G')).toBe(false);
       });
 
       it('should not match "Alt+G" with additional unwanted modifiers', () => {
@@ -151,7 +151,7 @@ describe('keyboard-shortcut', () => {
           altKey: true,
           ctrlKey: true
         });
-        expect(matchesShortcut(event, 'Alt+G')).toBe(false);
+        expect(keymatch(event, 'Alt+G')).toBe(false);
       });
     });
 
@@ -162,7 +162,7 @@ describe('keyboard-shortcut', () => {
           altKey: true,
           shiftKey: true
         });
-        expect(matchesShortcut(event, 'Alt+Shift+H')).toBe(true);
+        expect(keymatch(event, 'Alt+Shift+H')).toBe(true);
       });
 
       it('should match "Alt+Shift+J"', () => {
@@ -171,17 +171,17 @@ describe('keyboard-shortcut', () => {
           altKey: true,
           shiftKey: true
         });
-        expect(matchesShortcut(event, 'Alt+Shift+J')).toBe(true);
+        expect(keymatch(event, 'Alt+Shift+J')).toBe(true);
       });
 
       it('should not match "Alt+Shift+H" without Alt', () => {
         const event = createKeyboardEvent({ key: 'H', shiftKey: true });
-        expect(matchesShortcut(event, 'Alt+Shift+H')).toBe(false);
+        expect(keymatch(event, 'Alt+Shift+H')).toBe(false);
       });
 
       it('should not match "Alt+Shift+H" without Shift', () => {
         const event = createKeyboardEvent({ key: 'H', altKey: true });
-        expect(matchesShortcut(event, 'Alt+Shift+H')).toBe(false);
+        expect(keymatch(event, 'Alt+Shift+H')).toBe(false);
       });
 
       it('should not match "Alt+Shift+J" with wrong key', () => {
@@ -190,7 +190,7 @@ describe('keyboard-shortcut', () => {
           altKey: true,
           shiftKey: true
         });
-        expect(matchesShortcut(event, 'Alt+Shift+J')).toBe(false);
+        expect(keymatch(event, 'Alt+Shift+J')).toBe(false);
       });
 
       it('should not match "Alt+Shift+H" with additional unwanted modifiers', () => {
@@ -200,29 +200,29 @@ describe('keyboard-shortcut', () => {
           shiftKey: true,
           ctrlKey: true
         });
-        expect(matchesShortcut(event, 'Alt+Shift+H')).toBe(false);
+        expect(keymatch(event, 'Alt+Shift+H')).toBe(false);
       });
     });
 
     describe('edge cases', () => {
       it('should handle empty accelerator string', () => {
         const event = createKeyboardEvent({ key: 'a' });
-        expect(matchesShortcut(event, '')).toBe(false);
+        expect(keymatch(event, '')).toBe(false);
       });
 
       it('should handle special keys like Space', () => {
         const event = createKeyboardEvent({ key: ' ' });
-        expect(matchesShortcut(event, 'Space')).toBe(true);
+        expect(keymatch(event, 'Space')).toBe(true);
       });
 
       it('should handle arrow keys', () => {
         const event = createKeyboardEvent({ key: 'ArrowUp' });
-        expect(matchesShortcut(event, 'Up')).toBe(true);
+        expect(keymatch(event, 'Up')).toBe(true);
       });
 
       it('should handle function keys', () => {
         const event = createKeyboardEvent({ key: 'F5' });
-        expect(matchesShortcut(event, 'F5')).toBe(true);
+        expect(keymatch(event, 'F5')).toBe(true);
       });
     });
   });
@@ -237,8 +237,8 @@ describe('keyboard-shortcut', () => {
       const cmdEvent = createKeyboardEvent({ key: 'k', metaKey: true });
       const ctrlEvent = createKeyboardEvent({ key: 'k', ctrlKey: true });
 
-      expect(matchesShortcut(cmdEvent, 'CmdOrCtrl+K')).toBe(true);
-      expect(matchesShortcut(ctrlEvent, 'CmdOrCtrl+K')).toBe(false);
+      expect(keymatch(cmdEvent, 'CmdOrCtrl+K')).toBe(true);
+      expect(keymatch(ctrlEvent, 'CmdOrCtrl+K')).toBe(false);
     });
 
     it('should use Ctrl on Windows for CmdOrCtrl', () => {
@@ -250,8 +250,8 @@ describe('keyboard-shortcut', () => {
       const cmdEvent = createKeyboardEvent({ key: 'k', metaKey: true });
       const ctrlEvent = createKeyboardEvent({ key: 'k', ctrlKey: true });
 
-      expect(matchesShortcut(cmdEvent, 'CmdOrCtrl+K')).toBe(false);
-      expect(matchesShortcut(ctrlEvent, 'CmdOrCtrl+K')).toBe(true);
+      expect(keymatch(cmdEvent, 'CmdOrCtrl+K')).toBe(false);
+      expect(keymatch(ctrlEvent, 'CmdOrCtrl+K')).toBe(true);
     });
 
     it('should use Ctrl on Linux for CmdOrCtrl', () => {
@@ -263,8 +263,8 @@ describe('keyboard-shortcut', () => {
       const cmdEvent = createKeyboardEvent({ key: 'k', metaKey: true });
       const ctrlEvent = createKeyboardEvent({ key: 'k', ctrlKey: true });
 
-      expect(matchesShortcut(cmdEvent, 'CmdOrCtrl+K')).toBe(false);
-      expect(matchesShortcut(ctrlEvent, 'CmdOrCtrl+K')).toBe(true);
+      expect(keymatch(cmdEvent, 'CmdOrCtrl+K')).toBe(false);
+      expect(keymatch(ctrlEvent, 'CmdOrCtrl+K')).toBe(true);
     });
   });
 
@@ -276,7 +276,7 @@ describe('keyboard-shortcut', () => {
       });
 
       const event = createKeyboardEvent({ key: 'Delete', metaKey: true });
-      expect(matchesShortcut(event, 'CmdOrCtrl+Delete')).toBe(true);
+      expect(keymatch(event, 'CmdOrCtrl+Delete')).toBe(true);
     });
 
     it('should match CmdOrCtrl+Delete with Ctrl+Delete on Windows', () => {
@@ -286,7 +286,7 @@ describe('keyboard-shortcut', () => {
       });
 
       const event = createKeyboardEvent({ key: 'Delete', ctrlKey: true });
-      expect(matchesShortcut(event, 'CmdOrCtrl+Delete')).toBe(true);
+      expect(keymatch(event, 'CmdOrCtrl+Delete')).toBe(true);
     });
 
     it('should match CmdOrCtrl+Delete with Ctrl+Delete on Linux', () => {
@@ -296,7 +296,7 @@ describe('keyboard-shortcut', () => {
       });
 
       const event = createKeyboardEvent({ key: 'Delete', ctrlKey: true });
-      expect(matchesShortcut(event, 'CmdOrCtrl+Delete')).toBe(true);
+      expect(keymatch(event, 'CmdOrCtrl+Delete')).toBe(true);
     });
   });
 });

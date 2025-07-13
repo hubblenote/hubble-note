@@ -4,7 +4,7 @@
 	import { createLinkMark, getLinkAttrs } from './schema';
 	import { getSelectedLinkRange } from './plugins/link';
 	import type { EditorView } from 'prosemirror-view';
-	import { matchesShortcut } from '$lib/keyboard-shortcut';
+	import { keymatch } from '$lib/keymatch.ts';
 	import type { CursorPosition } from './Cursor.svelte.ts';
 	import Icon from '@iconify/svelte';
 	import { openUrl } from '@tauri-apps/plugin-opener';
@@ -68,7 +68,7 @@
 	}
 
 	function handleGlobalFocusInput(event: KeyboardEvent) {
-		if (matchesShortcut(event, 'Tab')) {
+		if (keymatch(event, 'Tab')) {
 			event.preventDefault();
 			status = 'focused';
 			queueMicrotask(() => {
@@ -82,17 +82,17 @@
 		const isInputFocused = document.activeElement === inputEl;
 		const editorFocused = document.activeElement === editorView.dom;
 
-		if (isInputFocused && (matchesShortcut(event, 'Enter') || matchesShortcut(event, 'Escape'))) {
+		if (isInputFocused && (keymatch(event, 'Enter') || keymatch(event, 'Escape'))) {
 			event.preventDefault();
 			editorView.focus();
-		} else if (editorFocused && matchesShortcut(event, 'Escape')) {
+		} else if (editorFocused && keymatch(event, 'Escape')) {
 			event.preventDefault();
 			status = 'hidden';
 		}
 	}
 
 	function handleGlobalVisitLink(event: KeyboardEvent) {
-		if (matchesShortcut(event, 'Tab') && document.activeElement === inputEl) {
+		if (keymatch(event, 'Tab') && document.activeElement === inputEl) {
 			event.preventDefault();
 			handleVisitLink();
 		}
