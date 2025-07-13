@@ -8,6 +8,10 @@
     background-color: rgba(40, 200, 64, 0.3);
 }
 
+.ProseMirror li {
+    list-style-type: none;
+}
+
 .link-text {
     color: #565656;
     text-decoration: underline;

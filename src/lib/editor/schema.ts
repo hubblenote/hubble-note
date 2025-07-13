@@ -26,6 +26,18 @@ export const schema = new Schema({
       { tag: "h6", attrs: { level: 6 } }],
       toDOM(node) { return ["h" + node.attrs.level, 0] }
     },
+    bulletedList: {
+      content: 'listItem+',
+      group: 'block',
+      parseDOM: [{ tag: 'ul' }],
+      toDOM() { return ['ul', 0] }
+    },
+    listItem: {
+      content: 'inline*',
+      group: 'block',
+      parseDOM: [{ tag: 'li' }],
+      toDOM() { return ['li', 0] }
+    },
     text: {
       group: 'inline',
     },

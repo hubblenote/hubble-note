@@ -16,6 +16,7 @@
 	import LinkPopover from './LinkPopover.svelte';
 	import Cursor from './Cursor.svelte';
 	import { CursorPosition } from './Cursor.svelte.ts';
+	import { bulletedListKeymapPlugin, bulletedListPlugin } from './plugins/bulletedList.ts';
 
 	let editorEl = $state<HTMLDivElement>();
 	let editorState: EditorState | null = $state(null);
@@ -48,6 +49,8 @@
 					highlightPlugin,
 					linkPlugin,
 					headingPlugin,
+					bulletedListPlugin,
+					bulletedListKeymapPlugin,
 					boldKeymapPlugin,
 					italicKeymapPlugin,
 					underlineKeymapPlugin,
