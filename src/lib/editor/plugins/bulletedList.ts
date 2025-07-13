@@ -21,15 +21,88 @@ export const bulletedListPlugin = new Plugin({
     props: {
         handleKeyDown(view, event) {
             const resolvedPos = view.state.doc.resolve(view.state.selection.head);
-            const outerNode = resolvedPos.node(resolvedPos.depth);
-            if (keymatch(event, 'backspace') && outerNode?.type.name === 'listItem') {
-                console.log('backspace');
+            const listItemNode = resolvedPos.node(resolvedPos.depth);
+            if (keymatch(event, 'backspace') && listItemNode?.type.name === 'listItem') {
                 const pluginState = this.getState(view.state);
                 const [decorationToTheRight] = pluginState?.find(view.state.selection.head - 1) ?? [];
                 if (!decorationToTheRight) return false;
 
-                const tr = view.state.tr.setNodeMarkup(view.state.selection.head, schema.nodes.paragraph);
-                tr.delete(decorationToTheRight.from, decorationToTheRight.to);
+                // Find the bulletedList parent and the position of the current listItem
+                let bulletedListPos = -1;
+                let listItemIndex = -1;
+                let bulletedListNode = null;
+
+                for (let depth = resolvedPos.depth - 1; depth >= 0; depth--) {
+                    const node = resolvedPos.node(depth);
+                    if (node.type.name === 'bulletedList') {
+                        bulletedListPos = resolvedPos.start(depth) - 1;
+                        bulletedListNode = node;
+                        // Find which child is our listItem
+                        let childPos = resolvedPos.start(depth);
+                        for (let i = 0; i < node.childCount; i++) {
+                            const child = node.child(i);
+                            if (childPos <= resolvedPos.pos && resolvedPos.pos <= childPos + child.nodeSize) {
+                                listItemIndex = i;
+                                break;
+                            }
+                            childPos += child.nodeSize;
+                        }
+                        break;
+                    }
+                }
+
+                if (bulletedListPos === -1 || listItemIndex === -1 || !bulletedListNode) {
+                    return false;
+                }
+
+                let tr = view.state.tr;
+
+                // Remove the bullet decoration first
+                tr.delete(tr.mapping.map(decorationToTheRight.from), tr.mapping.map(decorationToTheRight.to));
+
+                // Find the updated bulletedList and listItem after bullet removal
+                const updatedBulletedListPos = tr.mapping.map(bulletedListPos);
+                const updatedBulletedListNode = tr.doc.nodeAt(updatedBulletedListPos);
+                if (!updatedBulletedListNode) return false;
+
+                const updatedListItemNode = updatedBulletedListNode.child(listItemIndex);
+
+                // Convert the listItem content to a paragraph
+                const paragraphNode = schema.node('paragraph', null, updatedListItemNode.content);
+
+                // Split the bulletedList
+                const beforeItems = [];
+                const afterItems = [];
+
+                for (let i = 0; i < updatedBulletedListNode.childCount; i++) {
+                    if (i < listItemIndex) {
+                        beforeItems.push(updatedBulletedListNode.child(i));
+                    } else if (i > listItemIndex) {
+                        afterItems.push(updatedBulletedListNode.child(i));
+                    }
+                }
+
+                // Build replacement nodes
+                const replacements = [];
+
+                // Add bulletedList with items before (if any)
+                if (beforeItems.length > 0) {
+                    replacements.push(schema.node('bulletedList', null, beforeItems));
+                }
+
+                // Add the converted paragraph
+                replacements.push(paragraphNode);
+
+                // Add bulletedList with items after (if any)
+                if (afterItems.length > 0) {
+                    replacements.push(schema.node('bulletedList', null, afterItems));
+                }
+
+                // Replace the entire bulletedList with the new structure
+                const fromPos = updatedBulletedListPos;
+                const toPos = updatedBulletedListPos + updatedBulletedListNode.nodeSize;
+                tr.replaceWith(fromPos, toPos, replacements);
+
                 view.dispatch(tr);
                 return true;
             }
