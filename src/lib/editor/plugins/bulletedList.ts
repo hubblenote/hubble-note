@@ -31,36 +31,15 @@ export const bulletedListPlugin = new Plugin({
                 const resolvedPos = tr.doc.resolve(tr.mapping.map(tr.selection.head));
                 const listItemNode = resolvedPos.node(resolvedPos.depth);
 
-                // Find the bulletedList parent and the position of the current listItem
-                let bulletedListPos = -1;
-                let listItemIndex = -1;
-                let bulletedListNode = null;
+                // Go up in depth by 1 to get the bulletedList properties
+                const bulletedListNode = resolvedPos.parent;
+                const bulletedListPos = resolvedPos.start(-1) - 1;
+                // Index within parent. Used to find list items before and after
+                const listItemIndex = resolvedPos.index(-1);
 
-                for (let depth = resolvedPos.depth - 1; depth >= 0; depth--) {
-                    const node = resolvedPos.node(depth);
-                    if (node.type.name === 'bulletedList') {
-                        bulletedListPos = resolvedPos.start(depth) - 1;
-                        bulletedListNode = node;
-                        // Find which child is our listItem
-                        let childPos = resolvedPos.start(depth);
-                        for (let i = 0; i < node.childCount; i++) {
-                            const child = node.child(i);
-                            if (childPos <= resolvedPos.pos && resolvedPos.pos <= childPos + child.nodeSize) {
-                                listItemIndex = i;
-                                break;
-                            }
-                            childPos += child.nodeSize;
-                        }
-                        break;
-                    }
-                }
-
-                if (bulletedListPos === -1 || listItemIndex === -1 || !bulletedListNode) {
+                if (bulletedListPos === -1 || listItemIndex === -1 || bulletedListNode.type.name !== 'bulletedList') {
                     return false;
                 }
-
-                // Convert the listItem content to a paragraph
-                const paragraphNode = schema.node('paragraph', null, listItemNode.content);
 
                 // Split the bulletedList
                 const beforeItems = [];
@@ -83,7 +62,7 @@ export const bulletedListPlugin = new Plugin({
                 }
 
                 // Add the converted paragraph
-                replacements.push(paragraphNode);
+                replacements.push(schema.node('paragraph', null, listItemNode.content));
 
                 // Add bulletedList with items after (if any)
                 if (afterItems.length > 0) {
