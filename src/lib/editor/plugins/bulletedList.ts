@@ -26,6 +26,7 @@ export const bulletedListPlugin = new Plugin({
                 if (!decoration) return false;
 
                 const tr = view.state.tr;
+                // Delete the decoration
                 tr.delete(tr.mapping.map(decoration.from), tr.mapping.map(decoration.to) + 1);
 
                 const resolvedPos = tr.doc.resolve(tr.mapping.map(tr.selection.head));
@@ -41,6 +42,7 @@ export const bulletedListPlugin = new Plugin({
                     return false;
                 }
 
+                // Collect list items before and after the current list item
                 const beforeItems = [];
                 const afterItems = [];
 
