@@ -33,7 +33,7 @@ export const bulletedListPlugin = new Plugin({
                 }
                 return false;
             }
-            if (keymatch(event, 'backspace')) {
+            if (event.key === 'Backspace') {
                 const pluginState = this.getState(view.state);
                 const [decoration] = pluginState?.find(view.state.selection.head - 1) ?? [];
                 if (!decoration) return false;
@@ -68,22 +68,19 @@ export const bulletedListPlugin = new Plugin({
                 }
 
                 // Build replacement nodes
-                const replacements = [];
+                const beforeList = beforeItems.length > 0 ? schema.node('bulletedList', null, beforeItems) : null;
+                const afterList = afterItems.length > 0 ? schema.node('bulletedList', null, afterItems) : null;
 
-                if (beforeItems.length > 0) {
-                    replacements.push(schema.node('bulletedList', null, beforeItems));
-                }
-
-                replacements.push(schema.node('paragraph', null, listItemNode.content));
-
-                if (afterItems.length > 0) {
-                    replacements.push(schema.node('bulletedList', null, afterItems));
-                }
+                const replacements = [beforeList, schema.node('paragraph', null, listItemNode.content), afterList].filter((list): list is Node => list !== null);
 
                 // Replace the entire bulletedList with the new structure
                 const fromPos = tr.mapping.map(bulletedListPos);
                 const toPos = tr.mapping.map(bulletedListPos + bulletedListNode.nodeSize);
                 tr.replaceWith(fromPos, toPos, replacements);
+
+                // Set selection to the start of the new paragraph content
+                const newParagraphPos = fromPos + (beforeList?.nodeSize ?? 0);
+                tr.setSelection(TextSelection.create(tr.doc, newParagraphPos + 1));
 
                 view.dispatch(tr);
                 return true;
