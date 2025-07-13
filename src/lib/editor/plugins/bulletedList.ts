@@ -109,10 +109,15 @@ function updateBulletedLists(tr: Transaction) {
         // }
 
         if (!isListItem && bulletedListPrefix) {
-            tr.delete(tr.mapping.map(pos), tr.mapping.map(pos + node.nodeSize));
-            tr.insert(tr.mapping.map(pos), schema.node('bulletedList', null, [
-                schema.node('listItem', null, node.children)
-            ]));
+            tr.setNodeMarkup(tr.mapping.map(pos), schema.nodes.listItem);
+
+            // Wrap the listItem in a bulletedList
+            const listItemPos = tr.mapping.map(pos);
+            const listItemNode = tr.doc.nodeAt(listItemPos);
+            if (listItemNode) {
+                tr.replaceWith(listItemPos, listItemPos + listItemNode.nodeSize,
+                    schema.node('bulletedList', null, [listItemNode]));
+            }
             return false;
         }
 
