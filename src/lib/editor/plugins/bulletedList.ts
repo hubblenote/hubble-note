@@ -20,12 +20,16 @@ export const bulletedListPlugin = new Plugin({
     },
     props: {
         handleKeyDown(view, event) {
-            const resolvedPos = view.state.doc.resolve(view.state.selection.head);
-            const listItemNode = resolvedPos.node(resolvedPos.depth);
-            if (keymatch(event, 'backspace') && listItemNode?.type.name === 'listItem') {
+            if (keymatch(event, 'backspace')) {
                 const pluginState = this.getState(view.state);
-                const [decorationToTheRight] = pluginState?.find(view.state.selection.head - 1) ?? [];
-                if (!decorationToTheRight) return false;
+                const [decoration] = pluginState?.find(view.state.selection.head - 1) ?? [];
+                if (!decoration) return false;
+
+                const tr = view.state.tr;
+                tr.delete(tr.mapping.map(decoration.from), tr.mapping.map(decoration.to) + 1);
+
+                const resolvedPos = tr.doc.resolve(tr.mapping.map(tr.selection.head));
+                const listItemNode = resolvedPos.node(resolvedPos.depth);
 
                 // Find the bulletedList parent and the position of the current listItem
                 let bulletedListPos = -1;
@@ -55,30 +59,18 @@ export const bulletedListPlugin = new Plugin({
                     return false;
                 }
 
-                let tr = view.state.tr;
-
-                // Remove the bullet decoration first
-                tr.delete(tr.mapping.map(decorationToTheRight.from), tr.mapping.map(decorationToTheRight.to));
-
-                // Find the updated bulletedList and listItem after bullet removal
-                const updatedBulletedListPos = tr.mapping.map(bulletedListPos);
-                const updatedBulletedListNode = tr.doc.nodeAt(updatedBulletedListPos);
-                if (!updatedBulletedListNode) return false;
-
-                const updatedListItemNode = updatedBulletedListNode.child(listItemIndex);
-
                 // Convert the listItem content to a paragraph
-                const paragraphNode = schema.node('paragraph', null, updatedListItemNode.content);
+                const paragraphNode = schema.node('paragraph', null, listItemNode.content);
 
                 // Split the bulletedList
                 const beforeItems = [];
                 const afterItems = [];
 
-                for (let i = 0; i < updatedBulletedListNode.childCount; i++) {
+                for (let i = 0; i < bulletedListNode.childCount; i++) {
                     if (i < listItemIndex) {
-                        beforeItems.push(updatedBulletedListNode.child(i));
+                        beforeItems.push(bulletedListNode.child(i));
                     } else if (i > listItemIndex) {
-                        afterItems.push(updatedBulletedListNode.child(i));
+                        afterItems.push(bulletedListNode.child(i));
                     }
                 }
 
@@ -99,23 +91,13 @@ export const bulletedListPlugin = new Plugin({
                 }
 
                 // Replace the entire bulletedList with the new structure
-                const fromPos = updatedBulletedListPos;
-                const toPos = updatedBulletedListPos + updatedBulletedListNode.nodeSize;
+                const fromPos = tr.mapping.map(bulletedListPos);
+                const toPos = tr.mapping.map(bulletedListPos + bulletedListNode.nodeSize);
                 tr.replaceWith(fromPos, toPos, replacements);
 
                 view.dispatch(tr);
                 return true;
             }
-            // if (keymatch(event, 'enter') && isInListItem) {
-            //     let tr = view.state.tr.insert(view.state.selection.head, schema.node('paragraph', null, [
-            //         schema.text('- ')
-            //     ]));
-            //     // Move selection to position after the "- " text
-            //     const newPos = tr.mapping.map(view.state.selection.head) + 3;
-            //     tr.setSelection(TextSelection.create(tr.doc, newPos));
-            //     view.dispatch(tr);
-            //     return true;
-            // }
         },
         decorations(state) {
             return this.getState(state);
