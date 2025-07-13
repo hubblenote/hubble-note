@@ -22,16 +22,16 @@ export const bulletedListPlugin = new Plugin({
         handleKeyDown(view, event) {
             const resolvedPos = view.state.doc.resolve(view.state.selection.head);
             const isInListItem = resolvedPos.node(resolvedPos.depth)?.type.name === 'listItem';
-            if (matchesShortcut(event, 'enter') && isInListItem) {
-                let tr = view.state.tr.insert(view.state.selection.head, schema.node('paragraph', null, [
-                    schema.text('- ')
-                ]));
-                // Move selection to position after the "- " text
-                const newPos = tr.mapping.map(view.state.selection.head) + 3;
-                tr.setSelection(TextSelection.create(tr.doc, newPos));
-                view.dispatch(tr);
-                return true;
-            }
+            // if (matchesShortcut(event, 'enter') && isInListItem) {
+            //     let tr = view.state.tr.insert(view.state.selection.head, schema.node('paragraph', null, [
+            //         schema.text('- ')
+            //     ]));
+            //     // Move selection to position after the "- " text
+            //     const newPos = tr.mapping.map(view.state.selection.head) + 3;
+            //     tr.setSelection(TextSelection.create(tr.doc, newPos));
+            //     view.dispatch(tr);
+            //     return true;
+            // }
         },
         decorations(state) {
             return this.getState(state);
@@ -98,15 +98,10 @@ function updateBulletedLists(tr: Transaction) {
         const isListItem = node.type.name === 'listItem';
 
 
-        // handle splits
-        // if (isListItem && !bulletedListPrefix) {
-        //     const resolvedPos = tr.doc.resolve(pos);
-        //     const { depth, nodeBefore, nodeAfter } = resolvedPos;
-        //     tr.delete(tr.mapping.map(pos), tr.mapping.map(pos + node.nodeSize));
-        //     tr.split(tr.mapping.map(pos), depth - 1);
-        //     tr.insert(tr.mapping.map(pos), schema.node('paragraph', null, node.children));
-        //     return false;
-        // }
+        if (isListItem && !bulletedListPrefix) {
+            tr.insertText('- ', tr.mapping.map(pos) + 1);
+            return false;
+        }
 
         if (!isListItem && bulletedListPrefix) {
             tr.setNodeMarkup(tr.mapping.map(pos), schema.nodes.listItem);
