@@ -21,7 +21,18 @@ export const bulletedListPlugin = new Plugin({
     props: {
         handleKeyDown(view, event) {
             const resolvedPos = view.state.doc.resolve(view.state.selection.head);
-            const isInListItem = resolvedPos.node(resolvedPos.depth)?.type.name === 'listItem';
+            const outerNode = resolvedPos.node(resolvedPos.depth);
+            if (keymatch(event, 'backspace') && outerNode?.type.name === 'listItem') {
+                console.log('backspace');
+                const pluginState = this.getState(view.state);
+                const [decorationToTheRight] = pluginState?.find(view.state.selection.head - 1) ?? [];
+                if (!decorationToTheRight) return false;
+
+                const tr = view.state.tr.setNodeMarkup(view.state.selection.head, schema.nodes.paragraph);
+                tr.delete(decorationToTheRight.from, decorationToTheRight.to);
+                view.dispatch(tr);
+                return true;
+            }
             // if (keymatch(event, 'enter') && isInListItem) {
             //     let tr = view.state.tr.insert(view.state.selection.head, schema.node('paragraph', null, [
             //         schema.text('- ')
