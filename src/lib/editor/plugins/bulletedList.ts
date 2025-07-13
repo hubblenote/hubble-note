@@ -20,6 +20,19 @@ export const bulletedListPlugin = new Plugin({
     },
     props: {
         handleKeyDown(view, event) {
+            if (keymatch(event, 'CmdOrCtrl+Left')) {
+                const tr = view.state.tr;
+                const resolvedPos = tr.doc.resolve(tr.selection.head);
+                const listItemNode = resolvedPos.node(resolvedPos.depth);
+                if (listItemNode.type.name !== 'listItem') return false;
+                if (resolvedPos.parentOffset > 2) {
+                    const listItemPos = resolvedPos.start() + 2;
+                    tr.setSelection(TextSelection.create(tr.doc, listItemPos));
+                    view.dispatch(tr);
+                    return true;
+                }
+                return false;
+            }
             if (keymatch(event, 'backspace')) {
                 const pluginState = this.getState(view.state);
                 const [decoration] = pluginState?.find(view.state.selection.head - 1) ?? [];
