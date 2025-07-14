@@ -1,25 +1,50 @@
-import { EditorState, Plugin, TextSelection, Transaction } from "prosemirror-state";
+import { EditorState, Plugin, PluginKey, TextSelection, Transaction } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 import type { Node } from "prosemirror-model";
 import { schema } from "../schema";
 import { keymap } from "prosemirror-keymap";
 import { keymatch } from "$lib/keymatch";
 
-export const bulletedListPlugin = new Plugin({
+interface BulletedListPluginState {
+    decorations: DecorationSet;
+    // Flag to track when enter key was pressed during a transaction.
+    // If it was, we should handle appending a "- " prefix
+    // from appendTransaction.
+    shouldHandleEnterKey: boolean;
+}
+
+export const bulletedListPlugin = new Plugin<BulletedListPluginState>({
     state: {
         init() {
-            return DecorationSet.empty;
+            return {
+                decorations: DecorationSet.empty,
+                shouldHandleEnterKey: false
+            };
         },
-        apply(tr, _oldState) {
-            return getDecorations(tr.doc);
+        apply(tr, oldState) {
+            return {
+                decorations: getDecorations(tr.doc),
+                shouldHandleEnterKey: tr.getMeta('shouldHandleEnterKey') ?? oldState.shouldHandleEnterKey
+            };
         }
     },
     appendTransaction(transactions, _oldState, newState) {
         if (!transactions.some(tr => tr.docChanged)) return;
-        return updateBulletedLists(newState.tr);
+        const pluginState = this.getState(newState);
+        return updateBulletedLists(newState.tr, pluginState);
     },
     props: {
         handleKeyDown(view, event) {
+            if (keymatch(event, 'enter') || keymatch(event, 'CmdOrCtrl+Enter')) {
+                const tr = view.state.tr;
+                const resolvedPos = tr.doc.resolve(tr.selection.head);
+                const listItemNode = resolvedPos.node(resolvedPos.depth);
+                if (listItemNode.type.name !== 'listItem') return false;
+                tr.setMeta('shouldHandleEnterKey', true);
+                view.dispatch(tr);
+
+                return false;
+            }
             if (keymatch(event, 'CmdOrCtrl+Left')) {
                 const tr = view.state.tr;
                 const resolvedPos = tr.doc.resolve(tr.selection.head);
@@ -35,7 +60,7 @@ export const bulletedListPlugin = new Plugin({
             }
             if (event.key === 'Backspace') {
                 const pluginState = this.getState(view.state);
-                const [decoration] = pluginState?.find(view.state.selection.head - 1) ?? [];
+                const [decoration] = pluginState?.decorations.find(view.state.selection.head - 1) ?? [];
                 if (!decoration) return false;
 
                 const tr = view.state.tr;
@@ -87,7 +112,7 @@ export const bulletedListPlugin = new Plugin({
             }
         },
         decorations(state) {
-            return this.getState(state);
+            return this.getState(state)?.decorations;
         },
     }
 });
@@ -141,7 +166,7 @@ function toggleBulletedListCommand(state: EditorState, dispatch?: (tr: Transacti
 }
 
 
-function updateBulletedLists(tr: Transaction) {
+function updateBulletedLists(tr: Transaction, pluginState?: BulletedListPluginState) {
     tr.doc.descendants((node, pos) => {
         // Check if node is immediate parent of inline content
         if (!node.inlineContent) return true;
@@ -150,9 +175,9 @@ function updateBulletedLists(tr: Transaction) {
         const bulletedListPrefix = text.match(/^(-|\*)\s/)?.[0];
         const isListItem = node.type.name === 'listItem';
 
-
-        if (isListItem && !bulletedListPrefix) {
+        if (pluginState?.shouldHandleEnterKey && isListItem && !bulletedListPrefix) {
             tr.insertText('- ', tr.mapping.map(pos) + 1);
+            tr.setMeta('shouldHandleEnterKey', false);
             return false;
         }
 
