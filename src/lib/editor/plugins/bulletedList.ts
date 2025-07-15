@@ -149,7 +149,8 @@ function joinAdjacentBulletedLists(tr: Transaction) {
             const prevSelection = tr.selection.head;
             tr.replaceWith(start, end, schema.node('bulletedList', null, nodesToJoin.map(node => node.children).flat()));
             if (prevSelection >= start && prevSelection <= end) {
-                // We are flatting by a depth of 1, so we need to adjust the selection accordingly.
+                // We are combining the start and end of the bulletedList preceding the selection.
+                // So, adjust by 2 (accounts for start and end of joined bulletedList blocks)
                 tr.setSelection(TextSelection.create(tr.doc, prevSelection - 2));
             }
         }
