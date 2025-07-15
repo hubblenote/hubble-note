@@ -31,7 +31,11 @@ export const bulletedListPlugin = new Plugin<BulletedListPluginState>({
     appendTransaction(transactions, _oldState, newState) {
         if (!transactions.some(tr => tr.docChanged)) return;
         const pluginState = this.getState(newState);
-        return updateBulletedLists(newState.tr, pluginState);
+
+        const tr = newState.tr;
+        updateBulletedLists(tr, pluginState);
+        joinAdjacentBulletedLists(tr);
+        return tr;
     },
     props: {
         handleKeyDown(view, event) {
@@ -124,6 +128,33 @@ function toggleBulletedListCommand(state: EditorState, dispatch?: (tr: Transacti
 
 }
 
+function joinAdjacentBulletedLists(tr: Transaction) {
+    const bulletedListRanges: Map<number, number> = new Map();
+    tr.doc.descendants((node, pos) => {
+        if (node.type.name === 'bulletedList') {
+            bulletedListRanges.set(pos, pos + node.nodeSize);
+        }
+        return true;
+    });
+    for (const [start, end] of combineAdjacentRanges(bulletedListRanges)) {
+        const nodesToJoin: Node[] = [];
+
+        tr.doc.nodesBetween(start, end, (node) => {
+            if (node.type.name === 'bulletedList') {
+                nodesToJoin.push(node);
+                return false;
+            }
+        });
+        if (nodesToJoin.length > 1) {
+            const prevSelection = tr.selection.head;
+            tr.replaceWith(start, end, schema.node('bulletedList', null, nodesToJoin.map(node => node.children).flat()));
+            if (prevSelection >= start && prevSelection <= end) {
+                // We are flatting by a depth of 1, so we need to adjust the selection accordingly.
+                tr.setSelection(TextSelection.create(tr.doc, prevSelection - 2));
+            }
+        }
+    }
+}
 
 function updateBulletedLists(tr: Transaction, pluginState?: BulletedListPluginState) {
     tr.doc.descendants((node, pos) => {
@@ -152,15 +183,39 @@ function updateBulletedLists(tr: Transaction, pluginState?: BulletedListPluginSt
             const listItemPos = tr.mapping.map(pos);
             const listItemNode = tr.doc.nodeAt(listItemPos);
             if (listItemNode) {
+                const prevSelection = tr.selection.head;
                 tr.replaceWith(listItemPos, listItemPos + listItemNode.nodeSize,
                     schema.node('bulletedList', null, [listItemNode]));
+                // We're wrapping the listItem with an element, increasing the depth by 1.
+                // Adjust the selection accordingly.
+                tr.setSelection(TextSelection.create(tr.doc, prevSelection + 1));
             }
             return false;
         }
 
         return true;
     });
-    return tr;
+}
+
+function combineAdjacentRanges(rangeMap: Map<number, number>): Array<[number, number]> {
+    let rangesToJoin: Array<[number, number]> = [];
+    let contiguousRange: [number, number] | null = null;
+    for (const [start, end] of rangeMap) {
+        if (!contiguousRange) {
+            contiguousRange = [start, end];
+            continue;
+        }
+        if (contiguousRange[1] === start) {
+            contiguousRange[1] = end;
+            continue;
+        }
+        rangesToJoin.push(contiguousRange);
+        contiguousRange = null;
+    }
+    if (contiguousRange) {
+        rangesToJoin.push(contiguousRange);
+    }
+    return rangesToJoin;
 }
 
 /**

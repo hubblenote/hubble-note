@@ -39,7 +39,15 @@
 			},
 			state: EditorState.create({
 				doc: schema.node('doc', null, [
+					schema.node('bulletedList', null, [
+						schema.node('listItem', null, [schema.text('- One')]),
+						schema.node('listItem', null, [schema.text('- Two')]),
+					]),
 					schema.node('paragraph', null, [schema.text('This should be **bold** text')]),
+					schema.node('bulletedList', null, [
+						schema.node('listItem', null, [schema.text('- Three')]),
+						schema.node('listItem', null, [schema.text('- Four')]),
+					]),
 				]),
 				schema,
 				plugins: [
