@@ -66,47 +66,6 @@ export const bulletedListPlugin = new Plugin<BulletedListPluginState>({
                 const tr = view.state.tr;
                 // Delete the decoration
                 tr.delete(tr.mapping.map(decoration.from), tr.mapping.map(decoration.to) + 1);
-
-                const resolvedPos = tr.doc.resolve(tr.mapping.map(tr.selection.head));
-                const listItemNode = resolvedPos.node(resolvedPos.depth);
-
-                // Go up in depth by 1 to get the bulletedList properties
-                const bulletedListNode = resolvedPos.node(-1);
-                const bulletedListPos = resolvedPos.start(-1) - 1;
-                // Index within parent. Used to find list items before and after
-                const listItemIndex = resolvedPos.index(-1);
-
-                if (bulletedListPos === -1 || listItemIndex === -1 || bulletedListNode.type.name !== 'bulletedList') {
-                    return false;
-                }
-
-                // Collect list items before and after the current list item
-                const beforeItems = [];
-                const afterItems = [];
-
-                for (let i = 0; i < bulletedListNode.childCount; i++) {
-                    if (i < listItemIndex) {
-                        beforeItems.push(bulletedListNode.child(i));
-                    } else if (i > listItemIndex) {
-                        afterItems.push(bulletedListNode.child(i));
-                    }
-                }
-
-                // Build replacement nodes
-                const beforeList = beforeItems.length > 0 ? schema.node('bulletedList', null, beforeItems) : null;
-                const afterList = afterItems.length > 0 ? schema.node('bulletedList', null, afterItems) : null;
-
-                const replacements = [beforeList, schema.node('paragraph', null, listItemNode.content), afterList].filter((list): list is Node => list !== null);
-
-                // Replace the entire bulletedList with the new structure
-                const fromPos = tr.mapping.map(bulletedListPos);
-                const toPos = tr.mapping.map(bulletedListPos + bulletedListNode.nodeSize);
-                tr.replaceWith(fromPos, toPos, replacements);
-
-                // Set selection to the start of the new paragraph content
-                const newParagraphPos = fromPos + (beforeList?.nodeSize ?? 0);
-                tr.setSelection(TextSelection.create(tr.doc, newParagraphPos + 1));
-
                 view.dispatch(tr);
                 return true;
             }
@@ -181,6 +140,11 @@ function updateBulletedLists(tr: Transaction, pluginState?: BulletedListPluginSt
             return false;
         }
 
+        if (isListItem && !bulletedListPrefix) {
+            applyListSplitAtSelection(tr);
+            return false;
+        }
+
         if (!isListItem && bulletedListPrefix) {
             tr.setNodeMarkup(tr.mapping.map(pos), schema.nodes.listItem);
 
@@ -197,4 +161,53 @@ function updateBulletedLists(tr: Transaction, pluginState?: BulletedListPluginSt
         return true;
     });
     return tr;
+}
+
+/**
+ * Splits the list at the selection.
+ * @param tr - The transaction to apply the split to.
+ * @returns True if the split was applied, false otherwise.
+ */
+function applyListSplitAtSelection(tr: Transaction): boolean {
+    const resolvedPos = tr.doc.resolve(tr.mapping.map(tr.selection.head));
+    const listItemNode = resolvedPos.node(resolvedPos.depth);
+
+    // Go up in depth by 1 to get the bulletedList properties
+    const bulletedListNode = resolvedPos.node(-1);
+    const bulletedListPos = resolvedPos.start(-1) - 1;
+    // Index within parent. Used to find list items before and after
+    const listItemIndex = resolvedPos.index(-1);
+
+    if (bulletedListPos === -1 || listItemIndex === -1 || bulletedListNode.type.name !== 'bulletedList') {
+        return false;
+    }
+
+    // Collect list items before and after the current list item
+    const beforeItems = [];
+    const afterItems = [];
+
+    for (let i = 0; i < bulletedListNode.childCount; i++) {
+        if (i < listItemIndex) {
+            beforeItems.push(bulletedListNode.child(i));
+        } else if (i > listItemIndex) {
+            afterItems.push(bulletedListNode.child(i));
+        }
+    }
+
+    // Build replacement nodes
+    const beforeList = beforeItems.length > 0 ? schema.node('bulletedList', null, beforeItems) : null;
+    const afterList = afterItems.length > 0 ? schema.node('bulletedList', null, afterItems) : null;
+
+    const replacements = [beforeList, schema.node('paragraph', null, listItemNode.content), afterList].filter((list): list is Node => list !== null);
+
+    // Replace the entire bulletedList with the new structure
+    const fromPos = tr.mapping.map(bulletedListPos);
+    const toPos = tr.mapping.map(bulletedListPos + bulletedListNode.nodeSize);
+    tr.replaceWith(fromPos, toPos, replacements);
+
+    // Set selection to the start of the new paragraph content
+    const newParagraphPos = fromPos + (beforeList?.nodeSize ?? 0);
+    tr.setSelection(TextSelection.create(tr.doc, newParagraphPos + 1));
+
+    return true;
 }
