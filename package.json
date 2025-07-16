@@ -19,6 +19,8 @@
 		"@iconify-json/mingcute": "^1.2.3",
 		"@iconify/svelte": "^5.0.0",
 		"@tauri-apps/api": "^2",
+		"@tauri-apps/plugin-dialog": "~2",
+		"@tauri-apps/plugin-fs": "~2",
 		"@tauri-apps/plugin-opener": "^2",
 		"prosemirror-commands": "^1.7.1",
 		"prosemirror-history": "^1.4.1",
