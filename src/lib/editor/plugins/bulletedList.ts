@@ -13,6 +13,8 @@ interface BulletedListPluginState {
     shouldHandleEnterKey: boolean;
 }
 
+const BULLETED_LIST_PREFIX = '- ';
+
 export const bulletedListPlugin = new Plugin<BulletedListPluginState>({
     state: {
         init() {
@@ -39,37 +41,35 @@ export const bulletedListPlugin = new Plugin<BulletedListPluginState>({
     },
     props: {
         handleKeyDown(view, event) {
+            const tr = view.state.tr;
+            const resolvedPos = tr.doc.resolve(tr.selection.head);
+            const listItemNode = resolvedPos.node(resolvedPos.depth);
+            if (listItemNode.type.name !== 'listItem') return false;
+
             if (keymatch(event, 'enter') || keymatch(event, 'CmdOrCtrl+Enter')) {
-                const tr = view.state.tr;
-                const resolvedPos = tr.doc.resolve(tr.selection.head);
-                const listItemNode = resolvedPos.node(resolvedPos.depth);
-                if (listItemNode.type.name !== 'listItem') return false;
                 tr.setMeta('shouldHandleEnterKey', true);
                 view.dispatch(tr);
 
                 return false;
             }
             if (keymatch(event, 'CmdOrCtrl+Left')) {
-                const tr = view.state.tr;
-                const resolvedPos = tr.doc.resolve(tr.selection.head);
-                const listItemNode = resolvedPos.node(resolvedPos.depth);
-                if (listItemNode.type.name !== 'listItem') return false;
-                if (resolvedPos.parentOffset > 2) {
-                    const listItemPos = resolvedPos.start() + 2;
+                if (resolvedPos.parentOffset > BULLETED_LIST_PREFIX.length) {
+                    const listItemPos = resolvedPos.start() + BULLETED_LIST_PREFIX.length;
                     tr.setSelection(TextSelection.create(tr.doc, listItemPos));
                     view.dispatch(tr);
                     return true;
                 }
                 return false;
             }
+            // When the user hits backspace at the start of a list item,
+            // we want to delete the decoration.
             if (event.key === 'Backspace') {
-                const pluginState = this.getState(view.state);
-                const [decoration] = pluginState?.decorations.find(view.state.selection.head - 1) ?? [];
-                if (!decoration) return false;
+                // Check if cursor is at the start of the list item
+                if (resolvedPos.parentOffset > BULLETED_LIST_PREFIX.length) return false;
+                // Ignore range selections
+                if (!view.state.selection.empty) return false;
 
-                const tr = view.state.tr;
-                // Delete the decoration
-                tr.delete(tr.mapping.map(decoration.from), tr.mapping.map(decoration.to) + 1);
+                tr.delete(tr.mapping.map(resolvedPos.pos - BULLETED_LIST_PREFIX.length), tr.mapping.map(resolvedPos.pos));
                 view.dispatch(tr);
                 return true;
             }
