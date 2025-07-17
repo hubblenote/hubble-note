@@ -18,12 +18,14 @@
 	import { CursorPosition } from './Cursor.svelte.ts';
 	import { bulletedListKeymapPlugin, bulletedListPlugin } from './plugins/bulletedList.ts';
 	import { parseMarkdownToProseMirror } from './markdown-parser';
+	import { serializeProseMirrorToMarkdown } from './markdown-serializer.ts';
 
 	interface Props {
 		markdown?: string;
+		onUpdate?: (markdown: string) => void;
 	}
 
-	let { markdown = '' }: Props = $props();
+	let { markdown = '', onUpdate }: Props = $props();
 
 	let editorEl = $state<HTMLDivElement>();
 	let editorState: EditorState | null = $state(null);
@@ -43,11 +45,15 @@
 				const state = view.state.apply(tr);
 				view.updateState(state);
 				editorState = state;
+				if (tr.docChanged && onUpdate) {
+					const markdown = serializeProseMirrorToMarkdown(state.doc);
+					onUpdate(markdown);
+				}
 			},
 			state: EditorState.create({
-				doc: markdown ? parseMarkdownToProseMirror(markdown) : schema.node('doc', null, [
-					schema.node('paragraph', null, [schema.text('')])
-				]),
+				doc: markdown
+					? parseMarkdownToProseMirror(markdown)
+					: schema.node('doc', null, [schema.node('paragraph', null, [schema.text('')])]),
 				schema,
 				plugins: [
 					boldPlugin,
