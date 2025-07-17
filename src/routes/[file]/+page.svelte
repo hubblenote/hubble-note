@@ -6,7 +6,7 @@
 
 	let { data }: { data: PageData } = $props();
 
-	const save = debounce((markdown: string) => writeTextFile(data.filePath, markdown), 1000);
+	const save = debounce((markdown: string) => writeTextFile(data.filePath, markdown), 100);
 </script>
 
 <main class="container">
