@@ -25,7 +25,7 @@
     --cursor-transition-duration: 0.05s;
     --cursor-transition-timing-function: cubic-bezier(0.22, 0.08, 0.22, 1);
     /* Increase when recording demos */
-    --font-scale: 4;
+    --font-scale: 1;
 
     --font-size-xs: calc(9px * var(--font-scale));
     --font-size-sm: calc(11px * var(--font-scale));

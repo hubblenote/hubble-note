@@ -11,5 +11,5 @@
 		<summary>File Contents (Debug)</summary>
 		<pre>{data.contents}</pre>
 	</details>
-	<Editor />
+	<Editor markdown={data.contents} />
 </main>
