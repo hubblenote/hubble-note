@@ -4,7 +4,9 @@
 	"description": "",
 	"type": "module",
 	"scripts": {
-		"dev": "vite dev",
+		"dev": "run-p vite:dev electron:dev",
+		"vite:dev": "vite dev",
+		"electron:dev": "wait-on http://localhost:1420 && electron src-electron/main.js",
 		"build": "vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
@@ -24,6 +26,7 @@
 		"@tauri-apps/plugin-global-shortcut": "~2",
 		"@tauri-apps/plugin-opener": "^2",
 		"es-toolkit": "^1.39.7",
+		"npm-run-all": "^4.1.5",
 		"prosemirror-commands": "^1.7.1",
 		"prosemirror-history": "^1.4.1",
 		"prosemirror-keymap": "^1.2.3",
@@ -41,6 +44,7 @@
 		"@testing-library/jest-dom": "^6.6.3",
 		"@testing-library/svelte": "^5.2.4",
 		"@types/unist": "^3.0.3",
+		"electron": "^37.2.3",
 		"jsdom": "^26.0.0",
 		"prettier": "^3.5.3",
 		"prettier-plugin-svelte": "^3.4.0",
@@ -48,10 +52,12 @@
 		"svelte-check": "^4.0.0",
 		"typescript": "~5.6.2",
 		"vite": "^6.0.3",
-		"vitest": "^3.2.3"
+		"vitest": "^3.2.3",
+		"wait-on": "^8.0.3"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
+			"electron",
 			"esbuild"
 		]
 	}
