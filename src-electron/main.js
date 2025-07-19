@@ -1,17 +1,10 @@
 import { app, BrowserWindow } from 'electron';
 import * as path from 'path';
-import serve from 'electron-serve';
-import { fileURLToPath } from 'url';
+import { setApplicationMenu } from './menu.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const isDev = !app.isPackaged;
 
-const isProd = app.isPackaged;
-const loadURL = isProd
-    ? serve({ directory: path.join(__dirname, '../build') })
-    : () => win.loadURL('http://localhost:1420');
-
-
-async function createWindow() {
+function createWindow() {
     const win = new BrowserWindow({
         width: 800,
         height: 800,
@@ -21,7 +14,11 @@ async function createWindow() {
         },
     });
 
-    await loadURL(win);
+    if (isDev) {
+        win.loadURL('http://localhost:1420');
+    } else {
+        win.loadFile(path.join(__dirname, '../build/index.html'));
+    }
 }
 
 app.whenReady().then(createWindow);
