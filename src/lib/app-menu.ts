@@ -1,13 +1,15 @@
 import { Menu, MenuItem, Submenu } from '@tauri-apps/api/menu';
 import { openFile } from './shortcuts/open-file';
 
-export async function setAppMenu() {
-    const aboutSubmenu = await Submenu.new({
+export async function createAboutSubmenu(): Promise<Submenu> {
+    return Submenu.new({
         text: 'About',
-        items: []
+        items: [],
     });
+}
 
-    const fileSubmenu = await Submenu.new({
+export async function createFileSubmenu(): Promise<Submenu> {
+    return Submenu.new({
         text: 'File',
         items: [
             await MenuItem.new({
@@ -20,33 +22,21 @@ export async function setAppMenu() {
             }),
         ],
     });
+}
 
-    const editSubmenu = await Submenu.new({
+export async function createEditSubmenu(): Promise<Submenu> {
+    return Submenu.new({
         text: 'Edit',
-        items: [
-            await MenuItem.new({
-                id: 'undo',
-                text: 'Undo',
-                action: () => {
-                    console.log('Undo clicked');
-                },
-            }),
-            await MenuItem.new({
-                id: 'redo',
-                text: 'Redo',
-                action: () => {
-                    console.log('Redo clicked');
-                },
-            }),
-        ],
+        items: [],
     });
+}
 
-    const menu = await Menu.new({
+export async function createBaseAppMenu(): Promise<Menu | null> {
+    return await Menu.new({
         items: [
-            aboutSubmenu,
-            fileSubmenu,
-            editSubmenu,
+            await createAboutSubmenu(),
+            await createFileSubmenu(),
+            await createEditSubmenu(),
         ],
     });
-    await menu.setAsAppMenu();
 }

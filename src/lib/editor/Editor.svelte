@@ -1,82 +1,34 @@
 <script lang="ts">
 	import './styles.css';
-	import { EditorState, TextSelection } from 'prosemirror-state';
-	import { EditorView } from 'prosemirror-view';
+	import { TextSelection } from 'prosemirror-state';
 	import 'prosemirror-view/style/prosemirror.css';
-	import { keymap } from 'prosemirror-keymap';
-	import { baseKeymap } from 'prosemirror-commands';
-	import { history, undo, redo } from 'prosemirror-history';
-	import { schema } from './schema';
-	import { boldPlugin, boldKeymapPlugin } from './plugins/bold';
-	import { italicPlugin, italicKeymapPlugin } from './plugins/italic';
-	import { underlinePlugin, underlineKeymapPlugin } from './plugins/underline';
-	import { highlightPlugin, highlightKeymapPlugin } from './plugins/highlight';
-	import { linkPlugin, linkKeymapPlugin } from './plugins/link';
-	import { headingKeymapPlugin, headingPlugin } from './plugins/heading';
 	import LinkPopover from './LinkPopover.svelte';
 	import Cursor from './Cursor.svelte';
 	import { CursorPosition } from './Cursor.svelte.ts';
-	import { bulletedListKeymapPlugin, bulletedListPlugin } from './plugins/bulletedList.ts';
-	import { parseMarkdownToProseMirror } from './markdown-parser';
-	import type { Node } from 'prosemirror-model';
+	import type { EditorController } from './controller.svelte.ts';
+	import type { EditorView } from 'prosemirror-view';
 
 	interface Props {
+		controller: EditorController;
 		markdown?: string;
-		onUpdate?: (doc: Node) => void;
+		onInitView?: (view: EditorView) => void;
 	}
 
-	let { markdown = '', onUpdate }: Props = $props();
+	let { controller, markdown, onInitView }: Props = $props();
 
 	let editorEl = $state<HTMLDivElement>();
-	let editorState: EditorState | null = $state(null);
-	let editorView: EditorView | null = $state(null);
 	let isEditorFocused = $state(false);
 
 	let cursorPosition = $derived.by(() => {
-		if (!editorView || !editorState) return null;
-		return new CursorPosition(editorView, editorState);
+		if (!controller.view || !controller.state) return null;
+		return new CursorPosition(controller.view, controller.state);
 	});
 
 	$effect(() => {
 		if (!editorEl) return;
 
-		const view = new EditorView(editorEl, {
-			dispatchTransaction: (tr) => {
-				const state = view.state.apply(tr);
-				view.updateState(state);
-				editorState = state;
-				if (tr.docChanged && onUpdate) {
-					onUpdate(state.doc);
-				}
-			},
-			state: EditorState.create({
-				doc: markdown
-					? parseMarkdownToProseMirror(markdown)
-					: schema.node('doc', null, [schema.node('paragraph', null, [schema.text('')])]),
-				schema,
-				plugins: [
-					boldPlugin,
-					italicPlugin,
-					underlinePlugin,
-					highlightPlugin,
-					linkPlugin,
-					headingPlugin,
-					bulletedListPlugin,
-					bulletedListKeymapPlugin,
-					boldKeymapPlugin,
-					italicKeymapPlugin,
-					underlineKeymapPlugin,
-					highlightKeymapPlugin,
-					linkKeymapPlugin,
-					headingKeymapPlugin,
-					history(),
-					keymap({ 'Mod-z': undo, 'Mod-y': redo }),
-					keymap(baseKeymap),
-				],
-			}),
-		});
-
-		editorView = view;
+		const view = controller.initView(editorEl, markdown);
+		onInitView?.(view);
 
 		// Autofocus and position cursor at end once view is ready
 		queueMicrotask(() => {
@@ -94,8 +46,8 @@
 	onfocusin={() => (isEditorFocused = true)}
 	onfocusout={() => (isEditorFocused = false)}
 ></div>
-{#if editorState && editorView && cursorPosition && editorState.selection.empty}
-	<LinkPopover {editorState} {editorView} {cursorPosition} />
+{#if controller.state && controller.view && cursorPosition && controller.state.selection.empty}
+	<LinkPopover editorState={controller.state} editorView={controller.view} {cursorPosition} />
 	<Cursor {cursorPosition} {isEditorFocused} />
 {/if}
 
