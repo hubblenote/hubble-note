@@ -1,5 +1,6 @@
 import { Menu, MenuItem, PredefinedMenuItem, Submenu } from '@tauri-apps/api/menu';
 import { openFile } from './shortcuts/open-file';
+import { createFile } from './shortcuts/create-file';
 
 export async function createAboutSubmenu(): Promise<Submenu> {
     return Submenu.new({
@@ -17,6 +18,14 @@ export async function createFileSubmenu(): Promise<Submenu> {
     return Submenu.new({
         text: 'File',
         items: [
+            await MenuItem.new({
+                id: 'new',
+                text: 'New',
+                accelerator: 'CmdOrCtrl+N',
+                action: () => {
+                    createFile();
+                },
+            }),
             await MenuItem.new({
                 id: 'open',
                 text: 'Open...',

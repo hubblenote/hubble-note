@@ -53,4 +53,12 @@ export class EditorController {
         this.view = view;
         return view;
     }
+
+    destroyView = () => {
+        if (this.view) {
+            this.view.destroy();
+            this.view = null;
+            this.state = null;
+        }
+    }
 }

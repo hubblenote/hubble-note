@@ -29,6 +29,10 @@
 			view.dispatch(tr);
 			view.focus();
 		});
+
+		return () => {
+			controller.destroyView();
+		};
 	});
 </script>
 
