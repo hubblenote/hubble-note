@@ -5,10 +5,9 @@
 	import { writeTextFile } from '@tauri-apps/plugin-fs';
 	import type { Node } from 'prosemirror-model';
 	import { serializeProseMirrorToMarkdown } from '$lib/editor/markdown-serializer';
-	import { createAboutSubmenu, createEditSubmenu, createFileSubmenu } from '$lib/app-menu';
 	import { EditorController } from '$lib/editor/controller.svelte';
-	import { Menu, MenuItem, PredefinedMenuItem } from '@tauri-apps/api/menu';
 	import { onMount } from 'svelte';
+	import { createAppMenu } from './app-menu';
 
 	let { data }: { data: PageData } = $props();
 
@@ -25,61 +24,15 @@
 		}
 	});
 
-	async function createAppMenu() {
-		const aboutSubmenu = await createAboutSubmenu();
-		const fileSubmenu = await createFileSubmenu();
-		fileSubmenu.append([
-			await MenuItem.new({
-				id: 'save',
-				text: 'Save',
-				accelerator: 'CmdOrCtrl+S',
-				action: () => {
-					if (editorController.state?.doc) {
-						save(editorController.state.doc);
-					}
-				},
-			}),
-		]);
-		const editSubmenu = await createEditSubmenu();
-		editSubmenu.append([
-			await PredefinedMenuItem.new({
-				text: 'Undo',
-				item: 'Undo',
-			}),
-			await PredefinedMenuItem.new({
-				text: 'Redo',
-				item: 'Redo',
-			}),
-			await PredefinedMenuItem.new({
-				text: 'separator-text',
-				item: 'Separator',
-			}),
-			await PredefinedMenuItem.new({
-				text: 'Cut',
-				item: 'Cut',
-			}),
-			await PredefinedMenuItem.new({
-				text: 'Copy',
-				item: 'Copy',
-			}),
-			await PredefinedMenuItem.new({
-				text: 'Paste',
-				item: 'Paste',
-			}),
-			await PredefinedMenuItem.new({
-				text: 'Select All',
-				item: 'SelectAll',
-			}),
-		]);
-
-		const appMenu = await Menu.new({
-			items: [aboutSubmenu, fileSubmenu, editSubmenu],
+	onMount(async () => {
+		const appMenu = await createAppMenu({
+			saveAction: () => {
+				if (editorController.state?.doc) {
+					save(editorController.state.doc);
+				}
+			},
 		});
 		appMenu?.setAsAppMenu();
-	}
-
-	onMount(() => {
-		createAppMenu();
 	});
 </script>
 
