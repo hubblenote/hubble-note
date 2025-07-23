@@ -66,6 +66,18 @@
 			list-style-type: none;
 		}
 
+		.ProseMirror h1 {
+			margin-block-start: 3rem;
+			margin-block-end: 0.5rem;
+			font-size: 1.8rem;
+		}
+
+		.ProseMirror h2 {
+			margin-block-start: 2rem;
+			margin-block-end: 0.5rem;
+			font-size: 1.5rem;
+		}
+
 		.link-text {
 			color: #565656;
 			text-decoration: underline;

@@ -28,10 +28,13 @@
     --font-size-sm: calc(11px * var(--font-scale));
     --font-size-base: calc(15px * var(--font-scale));
     --font-family: 'Satoshi-Variable', sans-serif;
+
+    --font-color-primary: #353535;
 }
 
 body {
     font-family: var(--font-family);
+    color: var(--font-color-primary);
 }
 
 .sr-only {
