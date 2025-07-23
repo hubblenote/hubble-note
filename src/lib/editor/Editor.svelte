@@ -5,15 +5,13 @@
 	import LinkPopover from './LinkPopover.svelte';
 	import Cursor from './Cursor.svelte';
 	import type { EditorController } from './controller.svelte.ts';
-	import type { EditorView } from 'prosemirror-view';
 
 	interface Props {
 		controller: EditorController;
 		markdown?: string;
-		onInitView?: (view: EditorView) => void;
 	}
 
-	let { controller, markdown, onInitView }: Props = $props();
+	let { controller, markdown }: Props = $props();
 
 	let editorEl = $state<HTMLDivElement>();
 	let isEditorFocused = $state(false);
@@ -22,7 +20,6 @@
 		if (!editorEl) return;
 
 		const view = controller.initView(editorEl, markdown);
-		onInitView?.(view);
 
 		// Autofocus and position cursor at end once view is ready
 		queueMicrotask(() => {

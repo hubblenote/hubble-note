@@ -7,9 +7,8 @@
 	import { serializeProseMirrorToMarkdown } from '$lib/editor/markdown-serializer';
 	import { createAboutSubmenu, createEditSubmenu, createFileSubmenu } from '$lib/app-menu';
 	import { EditorController } from '$lib/editor/controller.svelte';
-	import { Menu, MenuItem } from '@tauri-apps/api/menu';
-	import { redo, undo } from 'prosemirror-history';
-	import type { EditorView } from 'prosemirror-view';
+	import { Menu, PredefinedMenuItem } from '@tauri-apps/api/menu';
+	import { onMount } from 'svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -26,22 +25,36 @@
 		}
 	});
 
-	async function handleInitEditorView(view: EditorView) {
+	async function createAppMenu() {
 		const editSubmenu = await createEditSubmenu();
 		editSubmenu.append([
-			await MenuItem.new({
+			await PredefinedMenuItem.new({
 				text: 'Undo',
-				accelerator: 'CmdOrCtrl+Z',
-				action: () => {
-					undo(view.state, view.dispatch);
-				},
+				item: 'Undo',
 			}),
-			await MenuItem.new({
+			await PredefinedMenuItem.new({
 				text: 'Redo',
-				accelerator: 'CmdOrCtrl+Y',
-				action: () => {
-					redo(view.state, view.dispatch);
-				},
+				item: 'Redo',
+			}),
+			await PredefinedMenuItem.new({
+				text: 'separator-text',
+				item: 'Separator',
+			}),
+			await PredefinedMenuItem.new({
+				text: 'Cut',
+				item: 'Cut',
+			}),
+			await PredefinedMenuItem.new({
+				text: 'Copy',
+				item: 'Copy',
+			}),
+			await PredefinedMenuItem.new({
+				text: 'Paste',
+				item: 'Paste',
+			}),
+			await PredefinedMenuItem.new({
+				text: 'Select All',
+				item: 'SelectAll',
 			}),
 		]);
 
@@ -50,6 +63,10 @@
 		});
 		appMenu?.setAsAppMenu();
 	}
+
+	onMount(() => {
+		createAppMenu();
+	});
 </script>
 
 <main class="container">
@@ -58,9 +75,5 @@
 		<summary>File Contents (Debug)</summary>
 		<pre>{data.contents}</pre>
 	</details>
-	<Editor
-		controller={editorController}
-		markdown={data.contents}
-		onInitView={handleInitEditorView}
-	/>
+	<Editor controller={editorController} markdown={data.contents} />
 </main>

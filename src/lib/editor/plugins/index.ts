@@ -26,7 +26,8 @@ export function getEditorPlugins() {
         linkKeymapPlugin,
         headingKeymapPlugin,
         history(),
-        keymap({ 'Mod-z': undo, 'Mod-y': redo }),
+        // Match system defaults
+        keymap({ 'Mod-z': undo, 'Mod-Shift-z': redo }),
         keymap(baseKeymap),
     ];
 }

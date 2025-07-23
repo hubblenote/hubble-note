@@ -1,10 +1,15 @@
-import { Menu, MenuItem, Submenu } from '@tauri-apps/api/menu';
+import { Menu, MenuItem, PredefinedMenuItem, Submenu } from '@tauri-apps/api/menu';
 import { openFile } from './shortcuts/open-file';
 
 export async function createAboutSubmenu(): Promise<Submenu> {
     return Submenu.new({
         text: 'About',
-        items: [],
+        items: [
+            await PredefinedMenuItem.new({
+                text: 'Quit',
+                item: 'Quit',
+            }),
+        ],
     });
 }
 
@@ -36,7 +41,6 @@ export async function createBaseAppMenu(): Promise<Menu | null> {
         items: [
             await createAboutSubmenu(),
             await createFileSubmenu(),
-            await createEditSubmenu(),
         ],
     });
 }
