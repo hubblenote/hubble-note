@@ -44,7 +44,7 @@ export class EditorController {
             state: EditorState.create({
                 doc: markdown
                     ? parseMarkdownToProseMirror(markdown)
-                    : schema.node('doc', null, [schema.node('paragraph', null, [schema.text('')])]),
+                    : schema.node('doc', null, [schema.node('paragraph')]),
                 schema,
                 plugins: getEditorPlugins(),
             }),
