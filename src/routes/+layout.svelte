@@ -1,4 +1,7 @@
 <script lang="ts">
+	import '$lib/reset.css';
+	import '$lib/styles.css';
+
 	let { children } = $props();
 </script>
 

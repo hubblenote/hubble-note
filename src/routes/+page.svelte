@@ -2,8 +2,6 @@
 	import { onMount } from 'svelte';
 	import { createBaseAppMenu } from '$lib/app-menu';
 	import { openFile } from '$lib/shortcuts/open-file';
-	import '$lib/reset.css';
-	import '$lib/styles.css';
 
 	onMount(async () => {
 		const appMenu = await createBaseAppMenu();
