@@ -68,14 +68,20 @@
 
 		.ProseMirror h1 {
 			margin-block-start: 3rem;
-			margin-block-end: 0.5rem;
 			font-size: 1.8rem;
+			font-weight: 900;
 		}
 
 		.ProseMirror h2 {
 			margin-block-start: 2rem;
-			margin-block-end: 0.5rem;
 			font-size: 1.5rem;
+			font-weight: 900;
+		}
+
+		.ProseMirror h3 {
+			margin-block-start: 1.5rem;
+			font-size: 1.2rem;
+			font-weight: 900;
 		}
 
 		.link-text {
@@ -89,6 +95,20 @@
 
 		.boundary-decorator {
 			color: #cbcbcb;
+			font-weight: 400;
+		}
+
+		h1 .boundary-decorator {
+			margin-inline-start: 0.32em;
+		}
+
+		h2 .boundary-decorator {
+			letter-spacing: -0.05em;
+		}
+
+		h3 .boundary-decorator {
+			letter-spacing: -0.05em;
+			font-size: 0.87em;
 		}
 	}
 </style>
