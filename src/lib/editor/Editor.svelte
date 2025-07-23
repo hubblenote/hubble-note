@@ -1,5 +1,4 @@
 <script lang="ts">
-	import './styles.css';
 	import { TextSelection } from 'prosemirror-state';
 	import 'prosemirror-view/style/prosemirror.css';
 	import LinkPopover from './LinkPopover.svelte';
@@ -51,10 +50,33 @@
 {/if}
 
 <style>
-	:global(.ProseMirror) {
-		outline: none;
-	}
-	:global(.boundary-decorator) {
-		color: #cbcbcb;
+	:global {
+		.ProseMirror {
+			font-size: var(--font-size-base);
+			/* Hide the default blinking cursor */
+			caret-color: transparent;
+			outline: none;
+		}
+
+		.ProseMirror ::selection {
+			background-color: rgba(40, 200, 64, 0.3);
+		}
+
+		.ProseMirror li {
+			list-style-type: none;
+		}
+
+		.link-text {
+			color: #565656;
+			text-decoration: underline;
+		}
+
+		.boundary-attr {
+			visibility: hidden;
+		}
+
+		.boundary-decorator {
+			color: #cbcbcb;
+		}
 	}
 </style>

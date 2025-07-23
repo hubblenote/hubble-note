@@ -1,0 +1,47 @@
+@font-face {
+    font-family: 'Satoshi-Variable';
+    src: url('/fonts/Satoshi-Variable.woff2') format('woff2'),
+        url('/fonts/Satoshi-Variable.woff') format('woff'),
+        url('/fonts/Satoshi-Variable.ttf') format('truetype');
+    font-weight: 300 900;
+    font-display: swap;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Satoshi-VariableItalic';
+    src: url('/fonts/Satoshi-VariableItalic.woff2') format('woff2'),
+        url('/fonts/Satoshi-VariableItalic.woff') format('woff'),
+        url('/fonts/Satoshi-VariableItalic.ttf') format('truetype');
+    font-weight: 300 900;
+    font-display: swap;
+    font-style: italic;
+}
+
+:root {
+    --cursor-transition-duration: 0.05s;
+    --cursor-transition-timing-function: cubic-bezier(0.22, 0.08, 0.22, 1);
+    /* Increase when recording demos */
+    --font-scale: 1;
+
+    --font-size-xs: calc(9px * var(--font-scale));
+    --font-size-sm: calc(11px * var(--font-scale));
+    --font-size-base: calc(15px * var(--font-scale));
+    --font-family: 'Satoshi-Variable', sans-serif;
+}
+
+body {
+    font-family: var(--font-family);
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
