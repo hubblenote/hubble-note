@@ -7,7 +7,7 @@
 	import { serializeProseMirrorToMarkdown } from '$lib/editor/markdown-serializer';
 	import { createAboutSubmenu, createEditSubmenu, createFileSubmenu } from '$lib/app-menu';
 	import { EditorController } from '$lib/editor/controller.svelte';
-	import { Menu, PredefinedMenuItem } from '@tauri-apps/api/menu';
+	import { Menu, MenuItem, PredefinedMenuItem } from '@tauri-apps/api/menu';
 	import { onMount } from 'svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -26,6 +26,20 @@
 	});
 
 	async function createAppMenu() {
+		const aboutSubmenu = await createAboutSubmenu();
+		const fileSubmenu = await createFileSubmenu();
+		fileSubmenu.append([
+			await MenuItem.new({
+				id: 'save',
+				text: 'Save',
+				accelerator: 'CmdOrCtrl+S',
+				action: () => {
+					if (editorController.state?.doc) {
+						save(editorController.state.doc);
+					}
+				},
+			}),
+		]);
 		const editSubmenu = await createEditSubmenu();
 		editSubmenu.append([
 			await PredefinedMenuItem.new({
@@ -59,7 +73,7 @@
 		]);
 
 		const appMenu = await Menu.new({
-			items: [await createAboutSubmenu(), await createFileSubmenu(), editSubmenu],
+			items: [aboutSubmenu, fileSubmenu, editSubmenu],
 		});
 		appMenu?.setAsAppMenu();
 	}
