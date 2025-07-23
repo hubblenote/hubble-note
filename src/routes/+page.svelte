@@ -1,9 +1,12 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { createBaseAppMenu } from '$lib/app-menu';
 	import { openFile } from '$lib/shortcuts/open-file';
 
-	const appMenu = await createBaseAppMenu();
-	appMenu?.setAsAppMenu();
+	onMount(async () => {
+		const appMenu = await createBaseAppMenu();
+		appMenu?.setAsAppMenu();
+	});
 </script>
 
 <main>
