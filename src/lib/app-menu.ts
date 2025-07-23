@@ -19,11 +19,19 @@ export async function createFileSubmenu(): Promise<Submenu> {
         items: [
             await MenuItem.new({
                 id: 'open',
-                text: 'Open',
+                text: 'Open...',
                 accelerator: 'CmdOrCtrl+O',
                 action: () => {
                     openFile();
                 },
+            }),
+            await PredefinedMenuItem.new({
+                text: 'separator-text',
+                item: 'Separator',
+            }),
+            await PredefinedMenuItem.new({
+                text: 'Close',
+                item: 'CloseWindow',
             }),
         ],
     });
