@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { CursorPosition } from './Cursor.svelte.ts';
+	import type { CursorPosition } from './controller.svelte.ts';
 
 	let {
 		cursorPosition,
@@ -10,16 +10,14 @@
 
 	$effect(() => {
 		if (cursorEl) {
-			const rect = cursorPosition.getBoundingClientRect(true);
-			if (rect) {
-				cursorEl.style.left = `${rect.left}px`;
-				cursorEl.style.top = `${rect.top}px`;
-				cursorEl.style.height = `${rect.height}px`;
-				isIdle = false;
-				setTimeout(() => {
-					isIdle = true;
-				}, 500);
-			}
+			const rect = cursorPosition.relativeToWindow;
+			cursorEl.style.left = `${rect.left}px`;
+			cursorEl.style.top = `${rect.top}px`;
+			cursorEl.style.height = `${rect.height}px`;
+			isIdle = false;
+			setTimeout(() => {
+				isIdle = true;
+			}, 500);
 		}
 	});
 </script>

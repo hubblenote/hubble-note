@@ -5,7 +5,7 @@
 	import { getSelectedLinkRange } from './plugins/link';
 	import type { EditorView } from 'prosemirror-view';
 	import { keymatch } from '$lib/keymatch.ts';
-	import type { CursorPosition } from './Cursor.svelte.ts';
+	import type { CursorPosition } from './controller.svelte.ts';
 	import Icon from '@iconify/svelte';
 	import { openUrl } from '@tauri-apps/plugin-opener';
 
@@ -106,23 +106,20 @@
 	$effect(() => {
 		if (!popoverEl) return;
 
-		const rect = cursorPosition.getBoundingClientRect();
-		if (rect) {
-			const virtualElement = {
-				getBoundingClientRect() {
-					return rect;
-				},
-			};
+		const virtualElement = {
+			getBoundingClientRect() {
+				return cursorPosition.relativeToEditor;
+			},
+		};
 
-			computePosition(virtualElement, popoverEl, {
-				placement: 'top',
-				middleware: [shift()],
-			}).then(({ x, y }) => {
-				if (!popoverEl) return;
-				popoverEl.style.left = `${x}px`;
-				popoverEl.style.top = `${y}px`;
-			});
-		}
+		computePosition(virtualElement, popoverEl, {
+			placement: 'top',
+			middleware: [shift()],
+		}).then(({ x, y }) => {
+			if (!popoverEl) return;
+			popoverEl.style.left = `${x}px`;
+			popoverEl.style.top = `${y}px`;
+		});
 	});
 </script>
 

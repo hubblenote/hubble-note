@@ -4,7 +4,6 @@
 	import 'prosemirror-view/style/prosemirror.css';
 	import LinkPopover from './LinkPopover.svelte';
 	import Cursor from './Cursor.svelte';
-	import { CursorPosition } from './Cursor.svelte.ts';
 	import type { EditorController } from './controller.svelte.ts';
 	import type { EditorView } from 'prosemirror-view';
 
@@ -18,11 +17,6 @@
 
 	let editorEl = $state<HTMLDivElement>();
 	let isEditorFocused = $state(false);
-
-	let cursorPosition = $derived.by(() => {
-		if (!controller.view || !controller.state) return null;
-		return new CursorPosition(controller.view, controller.state);
-	});
 
 	$effect(() => {
 		if (!editorEl) return;
@@ -46,9 +40,13 @@
 	onfocusin={() => (isEditorFocused = true)}
 	onfocusout={() => (isEditorFocused = false)}
 ></div>
-{#if controller.state && controller.view && cursorPosition && controller.state.selection.empty}
-	<LinkPopover editorState={controller.state} editorView={controller.view} {cursorPosition} />
-	<Cursor {cursorPosition} {isEditorFocused} />
+{#if controller.state?.selection.empty && controller.view && controller.cursorPosition}
+	<LinkPopover
+		editorState={controller.state}
+		editorView={controller.view}
+		cursorPosition={controller.cursorPosition}
+	/>
+	<Cursor cursorPosition={controller.cursorPosition} {isEditorFocused} />
 {/if}
 
 <style>
