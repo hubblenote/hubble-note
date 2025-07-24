@@ -62,8 +62,18 @@
 			background-color: rgba(40, 200, 64, 0.3);
 		}
 
+		.ProseMirror ul {
+			padding-inline-start: 2rem;
+		}
+
 		.ProseMirror li {
 			list-style-type: none;
+		}
+
+		/* The first boundary decorator is the bullet point */
+		.ProseMirror li .boundary-decorator:first-of-type {
+			/* Width of a `- ` character */
+			margin-inline-start: -0.68em;
 		}
 
 		.ProseMirror h1 {
