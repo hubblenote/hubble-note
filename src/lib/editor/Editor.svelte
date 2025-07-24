@@ -68,19 +68,19 @@
 
 		.ProseMirror h1 {
 			margin-block-start: 3rem;
-			font-size: 1.8rem;
+			font-size: var(--font-size-2xl);
 			font-weight: 900;
 		}
 
 		.ProseMirror h2 {
 			margin-block-start: 2rem;
-			font-size: 1.5rem;
+			font-size: var(--font-size-xl);
 			font-weight: 900;
 		}
 
 		.ProseMirror h3 {
 			margin-block-start: 1.5rem;
-			font-size: 1.2rem;
+			font-size: var(--font-size-lg);
 			font-weight: 900;
 		}
 
