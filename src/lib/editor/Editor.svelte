@@ -70,10 +70,13 @@
 			list-style-type: none;
 		}
 
-		/* The first boundary decorator is the bullet point */
-		.ProseMirror li .boundary-decorator:first-of-type {
+		.ProseMirror li .bullet-decorator {
 			/* Width of a `- ` character */
 			margin-inline-start: -0.68em;
+		}
+
+		.ProseMirror :is(code, .inline-code-decorator) {
+			font-family: var(--font-family-mono);
 		}
 
 		.ProseMirror h1 {

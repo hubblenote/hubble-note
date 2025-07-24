@@ -31,6 +31,8 @@
     --font-size-xl: calc(26px * var(--font-scale));
     --font-size-2xl: calc(32px * var(--font-scale));
     --font-family: 'Satoshi-Variable', sans-serif;
+    /* TODO: Pick a monospace font */
+    --font-family-mono: 'Courier New', Courier, monospace;
 
     --accent-color: #22b561;
     --font-color-primary: #353535;

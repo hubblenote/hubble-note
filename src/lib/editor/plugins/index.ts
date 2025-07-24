@@ -1,6 +1,7 @@
 import { boldPlugin, boldKeymapPlugin } from './bold';
 import { italicPlugin, italicKeymapPlugin } from './italic';
 import { underlinePlugin, underlineKeymapPlugin } from './underline';
+import { inlineCodePlugin, inlineCodeKeymapPlugin } from './inline-code';
 import { highlightPlugin, highlightKeymapPlugin } from './highlight';
 import { linkPlugin, linkKeymapPlugin } from './link';
 import { headingKeymapPlugin, headingPlugin } from './heading';
@@ -14,6 +15,7 @@ export function getEditorPlugins() {
         boldPlugin,
         italicPlugin,
         underlinePlugin,
+        inlineCodePlugin,
         highlightPlugin,
         linkPlugin,
         headingPlugin,
@@ -22,6 +24,7 @@ export function getEditorPlugins() {
         boldKeymapPlugin,
         italicKeymapPlugin,
         underlineKeymapPlugin,
+        inlineCodeKeymapPlugin,
         highlightKeymapPlugin,
         linkKeymapPlugin,
         headingKeymapPlugin,

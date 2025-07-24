@@ -93,7 +93,7 @@ function getDecorations(doc: Node) {
         if (node.type.name === 'listItem') {
             decorations.push(
                 Decoration.inline(textPos, textPos + 1, {
-                    class: 'boundary-decorator',
+                    class: 'boundary-decorator bullet-decorator',
                 }, { type: 'marker' }),
             );
             return false;
