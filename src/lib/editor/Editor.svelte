@@ -111,15 +111,15 @@
 			font-weight: 400;
 		}
 
-		h1 .boundary-decorator {
+		h1 .heading-decorator {
 			margin-inline-start: 0.32em;
 		}
 
-		h2 .boundary-decorator {
+		h2 .heading-decorator {
 			letter-spacing: -0.05em;
 		}
 
-		h3 .boundary-decorator {
+		h3 .heading-decorator {
 			letter-spacing: -0.05em;
 			font-size: 0.87em;
 		}

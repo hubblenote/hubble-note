@@ -36,7 +36,7 @@ function getDecorations(doc: Node) {
             } else {
                 decorations.push(
                     Decoration.inline(textPos, textPos + node.attrs.level, {
-                        class: 'boundary-decorator',
+                        class: 'boundary-decorator heading-decorator',
                     }, { type: 'marker' }),
                 );
             }
