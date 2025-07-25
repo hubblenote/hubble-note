@@ -56,6 +56,7 @@
 			/* Hide the default blinking cursor */
 			caret-color: transparent;
 			outline: none;
+			line-height: 1.7;
 		}
 
 		.ProseMirror ::selection {
