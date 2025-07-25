@@ -106,9 +106,11 @@
 	$effect(() => {
 		if (!popoverEl) return;
 
+		const rect = cursorPosition.relativeToEditor;
+
 		const virtualElement = {
 			getBoundingClientRect() {
-				return cursorPosition.relativeToEditor;
+				return rect;
 			},
 		};
 
