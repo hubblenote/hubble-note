@@ -18,6 +18,13 @@
     font-style: italic;
 }
 
+@font-face {
+    font-family: 'Zed Plex Mono';
+    src: url('/fonts/ZedPlexMono.ttf') format('truetype');
+    font-weight: 400;
+    font-display: swap;
+}
+
 :root {
     --cursor-transition-duration: 0.05s;
     --cursor-transition-timing-function: cubic-bezier(0.22, 0.08, 0.22, 1);
@@ -32,7 +39,7 @@
     --font-size-2xl: calc(32px * var(--font-scale));
     --font-family: 'Satoshi-Variable', sans-serif;
     /* TODO: Pick a monospace font */
-    --font-family-mono: 'Courier New', Courier, monospace;
+    --font-family-mono: 'Zed Plex Mono', monospace;
 
     --accent-color: #22b561;
     --font-color-primary: #353535;
