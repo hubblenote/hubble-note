@@ -1,0 +1,49 @@
+<script lang="ts">
+	let { title = '' } = $props();
+
+	let scrolled = $state(false);
+</script>
+
+<svelte:window
+	on:scroll={() => {
+		scrolled = window.scrollY > 0;
+	}}
+/>
+<p data-tauri-drag-region class:scrolled>{title}</p>
+
+<style>
+	p {
+		--traffic-light-padding: 13px;
+		--traffic-light-height: 12px;
+		height: calc(var(--traffic-light-height) + 2 * var(--traffic-light-padding));
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		user-select: none;
+		margin: 0;
+		padding-inline: 78px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+
+		background-color: white;
+		font-size: var(--font-size-sm);
+
+		position: sticky;
+		top: 0;
+		z-index: 1;
+	}
+
+	p.scrolled {
+		/* dashed border */
+		--border-width: 2px;
+		border-bottom: 1px solid transparent;
+		border-image: repeating-linear-gradient(
+				to right,
+				transparent 0 var(--border-width),
+				#eaeaea var(--border-width) calc(2 * var(--border-width))
+			)
+			1;
+	}
+</style>

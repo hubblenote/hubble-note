@@ -8,6 +8,7 @@
 	import { EditorController } from '$lib/editor/controller.svelte';
 	import { onMount } from 'svelte';
 	import { createAppMenu } from './app-menu';
+	import TitleBar from './TitleBar.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -37,10 +38,17 @@
 </script>
 
 <main class="container">
-	<h1>Editing: {data.filePath}</h1>
-	<details>
-		<summary>File Contents (Debug)</summary>
-		<pre>{data.contents}</pre>
-	</details>
-	<Editor controller={editorController} markdown={data.contents} />
+	<TitleBar title={data.filePath} />
+	<article>
+		<Editor controller={editorController} markdown={data.contents} />
+	</article>
 </main>
+
+<style>
+	article {
+		padding-inline: 16px;
+		max-width: 65ch;
+		margin-inline: auto;
+		padding-block-end: 5rem;
+	}
+</style>
