@@ -28,7 +28,10 @@
 		align-items: center;
 		justify-content: center;
 
+		-webkit-user-select: none;
 		user-select: none;
+		cursor: default;
+
 		margin: 0;
 		padding-inline: 78px;
 		overflow: hidden;
