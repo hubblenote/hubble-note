@@ -11,6 +11,7 @@
 	import TitleBar from './TitleBar.svelte';
 
 	let { data }: { data: PageData } = $props();
+	let scrollContainer = $state<HTMLDivElement | null>(null);
 
 	const save = debounce(
 		(doc: Node) => writeTextFile(data.filePath, serializeProseMirrorToMarkdown(doc)),
@@ -44,8 +45,8 @@
 />
 
 <main class="container">
-	<TitleBar title={data.filePath} />
-	<div class="content">
+	<TitleBar {scrollContainer} title={data.filePath} />
+	<div class="scroll-container" bind:this={scrollContainer}>
 		<article>
 			<Editor controller={editorController} markdown={data.contents} />
 		</article>
@@ -59,7 +60,7 @@
 		height: 100vh;
 	}
 
-	.content {
+	.scroll-container {
 		flex: 1;
 		overflow-y: scroll;
 		overscroll-behavior: contain;

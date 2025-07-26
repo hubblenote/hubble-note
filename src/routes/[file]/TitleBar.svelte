@@ -1,14 +1,22 @@
 <script lang="ts">
-	let { title = '' } = $props();
+	let { scrollContainer, title = '' }: { scrollContainer: HTMLElement | null; title: string } =
+		$props();
 
 	let scrolled = $state(false);
+
+	$effect(() => {
+		if (scrollContainer) {
+			const editorScrollListener = () => {
+				scrolled = scrollContainer.scrollTop > 0;
+			};
+			scrollContainer.addEventListener('scroll', editorScrollListener);
+			return () => {
+				scrollContainer.removeEventListener('scroll', editorScrollListener);
+			};
+		}
+	});
 </script>
 
-<svelte:window
-	on:scroll={() => {
-		scrolled = window.scrollY > 0;
-	}}
-/>
 <p data-tauri-drag-region class:scrolled>{title}</p>
 
 <style>
