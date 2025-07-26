@@ -41,6 +41,7 @@ body {
 }
 
 html {
+    /* Prevents navigation elements from "bouncing" on overscroll */
     overscroll-behavior: none;
 }
 
