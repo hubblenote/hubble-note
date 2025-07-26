@@ -88,6 +88,13 @@
 
 		.ProseMirror :is(code, .inline-code-decorator) {
 			font-family: var(--font-family-mono);
+			font-size: 0.9em;
+		}
+
+		.ProseMirror code {
+			background-color: #f0f0f0;
+			padding: 0.1em;
+			border-radius: 0.2em;
 		}
 
 		.ProseMirror h1 {
