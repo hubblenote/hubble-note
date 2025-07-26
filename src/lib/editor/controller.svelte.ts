@@ -14,25 +14,7 @@ export class EditorController {
     // State is tracked separately from the view to push reactive updates on `dispatchTransaction`
     state: EditorState | null = $state(null);
 
-    cursorPosition: CursorPosition | null = $derived.by(() => {
-        if (!this.state || !this.view) return null;
-        const pos = this.state.selection.head;
-        try {
-            const coords = this.view.coordsAtPos(pos);
-            const left = coords.left;
-            const top = coords.top;
-            const width = 0;
-            const height = coords.bottom - coords.top;
-
-            return {
-                relativeToWindow: new DOMRect(left + window.scrollX, top + window.scrollY, width, height),
-                relativeToEditor: new DOMRect(left, top, width, height),
-            };
-        } catch (error) {
-            console.warn('Could not get cursor position:', error);
-            return null;
-        }
-    });
+    cursorPosition: CursorPosition | null = $derived.by(() => this.computeCursorPosition());
 
     initView = (el: HTMLElement, markdown?: string): EditorView => {
         const view = new EditorView(el, {
@@ -59,6 +41,36 @@ export class EditorController {
             this.view.destroy();
             this.view = null;
             this.state = null;
+        }
+    }
+
+    updateCursorPosition = () => {
+        this.cursorPosition = this.computeCursorPosition();
+    }
+
+    private computeCursorPosition = (): CursorPosition | null => {
+        if (!this.state || !this.view) return null;
+        const pos = this.state.selection.head;
+        try {
+            const coords = this.view.coordsAtPos(pos);
+            const left = coords.left;
+            const top = coords.top;
+            const width = 0;
+            const height = coords.bottom - coords.top;
+            const containerRect = this.view.dom.getBoundingClientRect();
+
+            const relativeToWindow = new DOMRect(left, top, width, height);
+            const relativeToContentContainer = new DOMRect(
+                left - containerRect.left,
+                top - containerRect.top,
+                width,
+                height
+            );
+
+            return { relativeToWindow, relativeToEditor: relativeToContentContainer };
+        } catch (error) {
+            console.warn('Could not get cursor position:', error);
+            return null;
         }
     }
 }

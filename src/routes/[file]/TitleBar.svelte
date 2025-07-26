@@ -29,10 +29,6 @@
 
 		background-color: white;
 		font-size: var(--font-size-sm);
-
-		position: sticky;
-		top: 0;
-		z-index: 1;
 	}
 
 	p.scrolled {

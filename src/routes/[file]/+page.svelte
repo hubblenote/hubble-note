@@ -37,14 +37,34 @@
 	});
 </script>
 
+<svelte:window
+	onresize={() => {
+		editorController.updateCursorPosition();
+	}}
+/>
+
 <main class="container">
 	<TitleBar title={data.filePath} />
-	<article>
-		<Editor controller={editorController} markdown={data.contents} />
-	</article>
+	<div class="content">
+		<article>
+			<Editor controller={editorController} markdown={data.contents} />
+		</article>
+	</div>
 </main>
 
 <style>
+	main {
+		display: flex;
+		flex-direction: column;
+		height: 100vh;
+	}
+
+	.content {
+		flex: 1;
+		overflow-y: scroll;
+		overscroll-behavior: contain;
+	}
+
 	article {
 		padding-inline: 16px;
 		max-width: 65ch;

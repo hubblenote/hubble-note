@@ -10,7 +10,8 @@
 
 	$effect(() => {
 		if (cursorEl) {
-			const rect = cursorPosition.relativeToWindow;
+			// Position relative to the editor to scroll with the editor content
+			const rect = cursorPosition.relativeToEditor;
 			const scale = 1.5;
 			const height = rect.height * scale;
 			const topOffset = (height - rect.height) / 2;

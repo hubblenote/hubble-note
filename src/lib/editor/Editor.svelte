@@ -35,21 +35,31 @@
 	});
 </script>
 
-<div
-	bind:this={editorEl}
-	onfocusin={() => (isEditorFocused = true)}
-	onfocusout={() => (isEditorFocused = false)}
-></div>
-{#if controller.state?.selection.empty && controller.view && controller.cursorPosition}
-	<LinkPopover
-		editorState={controller.state}
-		editorView={controller.view}
-		cursorPosition={controller.cursorPosition}
-	/>
-	<Cursor cursorPosition={controller.cursorPosition} {isEditorFocused} />
-{/if}
+<div class="editor-container">
+	<div
+		bind:this={editorEl}
+		onfocusin={() => (isEditorFocused = true)}
+		onfocusout={() => (isEditorFocused = false)}
+	></div>
+	{#if controller.state?.selection.empty && controller.view && controller.cursorPosition}
+		<LinkPopover
+			editorState={controller.state}
+			editorView={controller.view}
+			cursorPosition={controller.cursorPosition}
+		/>
+		<Cursor cursorPosition={controller.cursorPosition} {isEditorFocused} />
+	{/if}
+</div>
 
 <style>
+	.editor-container {
+		/*
+		 * Set a relative position so absolute elements, like the cursor,
+		 * can be positioned relative to the editor.
+		 */
+		position: relative;
+	}
+
 	:global {
 		.ProseMirror {
 			font-size: var(--font-size-base);
