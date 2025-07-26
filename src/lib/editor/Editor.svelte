@@ -73,6 +73,10 @@
 			background-color: rgba(40, 200, 64, 0.3);
 		}
 
+		.ProseMirror p {
+			margin-block: 0;
+		}
+
 		.ProseMirror ul {
 			padding-inline-start: 2.5rem;
 		}
