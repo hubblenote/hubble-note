@@ -45,7 +45,7 @@
 />
 
 <main class="container">
-	<TitleBar {scrollContainer} title={data.filePath} />
+	<TitleBar {scrollContainer} title={data.displayPath} />
 	<div class="scroll-container" bind:this={scrollContainer}>
 		<article>
 			<Editor controller={editorController} markdown={data.contents} />
