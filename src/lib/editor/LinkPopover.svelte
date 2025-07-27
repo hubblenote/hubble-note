@@ -68,7 +68,7 @@
 	}
 
 	function handleGlobalFocusInput(event: KeyboardEvent) {
-		if (keymatch(event, 'Tab')) {
+		if (status !== 'focused' && keymatch(event, 'Tab')) {
 			event.preventDefault();
 			status = 'focused';
 			queueMicrotask(() => {
@@ -92,9 +92,16 @@
 	}
 
 	function handleGlobalVisitLink(event: KeyboardEvent) {
-		if (keymatch(event, 'Tab') && document.activeElement === inputEl) {
+		if (keymatch(event, 'CmdOrCtrl+Enter')) {
 			event.preventDefault();
 			handleVisitLink();
+		}
+	}
+
+	function handleGlobalCopyLink(event: KeyboardEvent) {
+		if (link && keymatch(event, 'CmdOrCtrl+Shift+C')) {
+			event.preventDefault();
+			navigator.clipboard.writeText(link.href);
 		}
 	}
 
@@ -130,6 +137,7 @@
 		handleGlobalFocusInput(event);
 		handleGlobalHidePopover(event);
 		handleGlobalVisitLink(event);
+		handleGlobalCopyLink(event);
 	}}
 />
 
@@ -141,16 +149,16 @@
 		onfocusout={() => (status = 'idle')}
 	>
 		<div class="link-popover-inner">
-		<div class="input-container">
-			{#if status === 'idle'}
-				<span class="tab-label input-tab-label">Tab</span>
-			{/if}
-			<input type="text" value={link.href} oninput={handleInput} bind:this={inputEl} />
-		</div>
-		<button onclick={handleVisitLink}>
-			<span class="sr-only">Visit link</span>
-			<Icon icon="mingcute:arrow-right-fill" />
-		</button>
+			<div class="input-container">
+				{#if status === 'idle'}
+					<span class="tab-label input-tab-label">Tab</span>
+				{/if}
+				<input type="text" value={link.href} oninput={handleInput} bind:this={inputEl} />
+			</div>
+			<button onclick={handleVisitLink}>
+				<span class="sr-only">Visit link</span>
+				<Icon icon="mingcute:arrow-right-fill" />
+			</button>
 		</div>
 	</div>
 {/if}
