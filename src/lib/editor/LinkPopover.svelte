@@ -4,7 +4,7 @@
 	import { createLinkMark, getLinkAttrs } from './schema';
 	import { getSelectedLinkRange } from './plugins/link';
 	import type { EditorView } from 'prosemirror-view';
-	import { keymatch } from '$lib/keymatch.ts';
+	import { keymatch } from 'keymatch';
 	import type { CursorPosition } from './controller.svelte.ts';
 	import Icon from '@iconify/svelte';
 	import { openUrl } from '@tauri-apps/plugin-opener';

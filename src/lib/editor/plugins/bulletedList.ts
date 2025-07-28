@@ -3,7 +3,7 @@ import { Decoration, DecorationSet } from "prosemirror-view";
 import type { Node } from "prosemirror-model";
 import { schema } from "../schema";
 import { keymap } from "prosemirror-keymap";
-import { keymatch } from "$lib/keymatch";
+import { keymatch } from "keymatch";
 
 interface BulletedListPluginState {
     decorations: DecorationSet;
