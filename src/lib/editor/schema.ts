@@ -1,4 +1,4 @@
-import { Mark, Schema } from "prosemirror-model";
+import { type Mark, Schema } from "prosemirror-model";
 
 export const schema = new Schema({
   nodes: {

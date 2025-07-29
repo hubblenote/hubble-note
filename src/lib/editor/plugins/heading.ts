@@ -1,4 +1,5 @@
-import { EditorState, Plugin, Transaction } from "prosemirror-state";
+import { EditorState, Plugin } from "prosemirror-state";
+import type { Transaction } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 import type { Node } from "prosemirror-model";
 import { schema } from "../schema";

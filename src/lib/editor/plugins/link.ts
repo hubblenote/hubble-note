@@ -1,5 +1,6 @@
 import { keymap } from "prosemirror-keymap";
-import { Plugin, Transaction } from "prosemirror-state";
+import { Plugin } from "prosemirror-state";
+import type { Transaction } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 import { createToggleMarkCommand } from "../commands/toggle-mark";
 import type { Node } from "prosemirror-model";
