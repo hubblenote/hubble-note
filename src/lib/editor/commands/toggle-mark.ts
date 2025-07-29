@@ -1,4 +1,4 @@
-import type { Plugin, Command } from 'prosemirror-state';
+import { type Plugin, type Command, TextSelection } from 'prosemirror-state';
 import type { Decoration } from 'prosemirror-view';
 
 export type MarkDecorationSpec = {
@@ -9,6 +9,7 @@ export type MarkDecorationSpec = {
 // TODO: handle multi-line selections. Doesn't work as expected yet
 // TODO handle marks that are adjacent but separated by spaces
 export const createToggleMarkCommand = (pluginRef: Plugin, mark: string, closingMark?: string): Command => {
+  closingMark ??= mark;
   return (state, dispatch) => {
     const decorations = pluginRef.getState(state);
     if (!decorations) return false;
@@ -41,7 +42,12 @@ export const createToggleMarkCommand = (pluginRef: Plugin, mark: string, closing
         tr = tr.insertText(mark, tr.mapping.map(from));
       }
       if (!isAppliedAtEnd) {
-        tr = tr.insertText(closingMark ?? mark, tr.mapping.map(to));
+        const toPos = tr.mapping.map(to);
+        tr = tr.insertText(closingMark, toPos);
+        // Move cursor in front of the closing mark if the selection is empty
+        if (state.selection.empty) {
+          tr = tr.setSelection(TextSelection.create(tr.doc, toPos));
+        }
       }
     } else {
       if (isAppliedAtStart) {
@@ -50,7 +56,7 @@ export const createToggleMarkCommand = (pluginRef: Plugin, mark: string, closing
         tr = tr.insertText(mark, tr.mapping.map(from - 1));
       }
       if (isAppliedAtEnd) {
-        tr = tr.insertText(closingMark ?? mark, tr.mapping.map(to + 1));
+        tr = tr.insertText(closingMark, tr.mapping.map(to + 1));
       }
     }
 
