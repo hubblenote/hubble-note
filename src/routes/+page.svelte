@@ -10,6 +10,24 @@
 </script>
 
 <main>
-	<h2>Open file</h2>
-	<button onclick={openFile}>Select Markdown File</button>
+	<div class="container">
+		<h2>Welcome to Hubble!</h2>
+		<button onclick={openFile}>Select Markdown File</button>
+	</div>
 </main>
+
+<style>
+	main {
+		display: grid;
+		place-items: center;
+		height: 100vh;
+		width: 100vw;
+	}
+
+	.container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+	}
+</style>
