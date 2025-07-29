@@ -16,7 +16,7 @@ export const createToggleMarkCommand = (pluginRef: Plugin, mark: string, closing
     if (!decorations) return false;
     if (!dispatch) return true;
 
-    let { selection, tr } = state;
+    const { selection, tr } = state;
 
     // First, check if the cursor is behind a closing mark.
     // This should move the cursor outside the mark instead of toggling.
@@ -45,29 +45,29 @@ export const createToggleMarkCommand = (pluginRef: Plugin, mark: string, closing
     const isAppliedAtStart = firstMarker && from > firstMarker.from;
     const isAppliedAtEnd = lastMarker && to < lastMarker.to;
     for (let decoration of markerDecorations) {
-      tr = tr.delete(tr.mapping.map(decoration.from), tr.mapping.map(decoration.to));
+      tr.delete(tr.mapping.map(decoration.from), tr.mapping.map(decoration.to));
     }
 
     if (shouldApplyMark) {
       if (!isAppliedAtStart) {
-        tr = tr.insertText(mark, tr.mapping.map(from));
+        tr.insertText(mark, tr.mapping.map(from));
       }
       if (!isAppliedAtEnd) {
         const toPos = tr.mapping.map(to);
-        tr = tr.insertText(closingMark, toPos);
+        tr.insertText(closingMark, toPos);
         // Move cursor in front of the closing mark if the selection is empty
         if (state.selection.empty) {
-          tr = tr.setSelection(TextSelection.create(tr.doc, toPos));
+          tr.setSelection(TextSelection.create(tr.doc, toPos));
         }
       }
     } else {
       if (isAppliedAtStart) {
         // move by 1 to place after the space rather than before
         // ex: generate "**bold** text" instead of "**bold **text"
-        tr = tr.insertText(mark, tr.mapping.map(from - 1));
+        tr.insertText(mark, tr.mapping.map(from - 1));
       }
       if (isAppliedAtEnd) {
-        tr = tr.insertText(closingMark, tr.mapping.map(to + 1));
+        tr.insertText(closingMark, tr.mapping.map(to + 1));
       }
     }
 
