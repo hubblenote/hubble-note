@@ -1,5 +1,5 @@
 import { type Plugin, type Command, TextSelection } from 'prosemirror-state';
-import type { Decoration } from 'prosemirror-view';
+import type { Decoration, DecorationSet } from 'prosemirror-view';
 
 export type MarkDecorationSpec = {
   type: 'marker' | 'text' | 'mark';
@@ -10,12 +10,25 @@ export type MarkDecorationSpec = {
 // TODO handle marks that are adjacent but separated by spaces
 export const createToggleMarkCommand = (pluginRef: Plugin, mark: string, closingMark?: string): Command => {
   closingMark ??= mark;
+
   return (state, dispatch) => {
-    const decorations = pluginRef.getState(state);
+    const decorations: DecorationSet = pluginRef.getState(state);
     if (!decorations) return false;
     if (!dispatch) return true;
 
-    const { selection } = state;
+    let { selection, tr } = state;
+
+    // First, check if the cursor is behind a closing mark.
+    // This should move the cursor outside the mark instead of toggling.
+    if (selection.empty && selection.from) {
+      const [adjacentDecoration] = decorations.find(selection.from, selection.from, (spec: MarkDecorationSpec) => spec.type === 'marker');
+      if (adjacentDecoration?.from === selection.from) {
+        tr.setSelection(TextSelection.create(tr.doc, selection.from + closingMark.length));
+        dispatch(tr);
+        return true;
+      }
+    }
+
     // Move `from` to the start of the word, and `to` to the end of the word.
     // Ex: Ex[ample te]xt -> [Example text]
     const fromOffset = getStartOfWordOffset(state.doc.resolve(selection.from).nodeBefore?.textContent ?? '');
@@ -25,8 +38,6 @@ export const createToggleMarkCommand = (pluginRef: Plugin, mark: string, closing
 
     const textDecorations = decorations.find(from, to, (spec: MarkDecorationSpec) => spec.type === 'mark');
     const markerDecorations = decorations.find(from, to, (spec: MarkDecorationSpec) => spec.type === 'marker');
-
-    let tr = state.tr;
 
     const shouldApplyMark = checkShouldApplyMark(from, to, textDecorations);
     const firstMarker = textDecorations[0];
