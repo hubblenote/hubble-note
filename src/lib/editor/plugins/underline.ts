@@ -9,7 +9,7 @@ export const underlinePlugin = new Plugin({
       return DecorationSet.empty;
     },
     apply(tr, _oldState) {
-      return findUnderlineDecorations(tr.doc);
+      return getDecorations(tr.doc);
     }
   },
   props: {
@@ -24,8 +24,7 @@ export const underlinePlugin = new Plugin({
   }
 });
 
-// Function to find ~underline~ patterns and create decorations
-function findUnderlineDecorations(doc: any) {
+function getDecorations(doc: any) {
   const decorations: Decoration[] = [];
 
   doc.descendants((node: any, pos: number) => {

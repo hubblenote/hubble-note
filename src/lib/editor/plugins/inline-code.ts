@@ -1,4 +1,3 @@
-
 import { keymap } from "prosemirror-keymap";
 import { Plugin } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";

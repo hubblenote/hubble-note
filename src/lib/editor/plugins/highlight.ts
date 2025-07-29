@@ -9,7 +9,7 @@ export const highlightPlugin = new Plugin({
       return DecorationSet.empty;
     },
     apply(tr, _oldState) {
-      return findHighlightDecorations(tr.doc);
+      return getDecorations(tr.doc);
     }
   },
   props: {
@@ -24,8 +24,7 @@ export const highlightPlugin = new Plugin({
   }
 });
 
-// Function to find ==highlight== patterns and create decorations
-function findHighlightDecorations(doc: any) {
+function getDecorations(doc: any) {
   const decorations: Decoration[] = [];
 
   doc.descendants((node: any, pos: number) => {

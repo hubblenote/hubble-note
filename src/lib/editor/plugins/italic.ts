@@ -9,7 +9,7 @@ export const italicPlugin = new Plugin({
       return DecorationSet.empty;
     },
     apply(tr, _oldState) {
-      return findItalicDecorations(tr.doc);
+      return getDecorations(tr.doc);
     }
   },
   props: {
@@ -25,8 +25,7 @@ export const italicPlugin = new Plugin({
   }
 });
 
-// Function to find **bold** patterns and create decorations
-function findItalicDecorations(doc: any) {
+function getDecorations(doc: any) {
   const decorations: Decoration[] = [];
 
   doc.descendants((node: any, pos: number) => {

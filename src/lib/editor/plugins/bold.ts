@@ -1,5 +1,5 @@
 import { keymap } from "prosemirror-keymap";
-import { Plugin, EditorState, Transaction, type Command } from "prosemirror-state";
+import { Plugin } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 import { createToggleMarkCommand } from "../commands/toggle-mark";
 
@@ -9,7 +9,7 @@ export const boldPlugin = new Plugin({
       return DecorationSet.empty;
     },
     apply(tr, _oldState) {
-      return findBoldDecorations(tr.doc);
+      return getDecorations(tr.doc);
     }
   },
   props: {
@@ -25,8 +25,7 @@ export const boldPlugin = new Plugin({
   }
 });
 
-// Function to find **bold** patterns and create decorations
-function findBoldDecorations(doc: any) {
+function getDecorations(doc: any) {
   const decorations: Decoration[] = [];
 
   doc.descendants((node: any, pos: number) => {
