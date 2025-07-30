@@ -37,6 +37,7 @@
 
 <div class="editor-container">
 	<div
+		class="editor-input-container"
 		bind:this={editorEl}
 		onfocusin={() => (isEditorFocused = true)}
 		onfocusout={() => (isEditorFocused = false)}
@@ -58,6 +59,15 @@
 		 * can be positioned relative to the editor.
 		 */
 		position: relative;
+		min-height: 100%;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.editor-input-container {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
 	}
 
 	:global {
@@ -67,6 +77,9 @@
 			caret-color: transparent;
 			outline: none;
 			line-height: 1.8;
+			flex: 1;
+			padding-block-end: 5rem;
+			padding-block-start: 1rem;
 		}
 
 		.ProseMirror ::selection {

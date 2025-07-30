@@ -70,7 +70,5 @@
 		padding-inline: 16px;
 		max-width: 65ch;
 		margin-inline: auto;
-		padding-block-start: 1rem;
-		padding-block-end: 5rem;
 	}
 </style>
