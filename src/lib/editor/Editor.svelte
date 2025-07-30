@@ -66,7 +66,7 @@
 			/* Hide the default blinking cursor */
 			caret-color: transparent;
 			outline: none;
-			line-height: 1.7;
+			line-height: 1.8;
 		}
 
 		.ProseMirror ::selection {
@@ -79,6 +79,7 @@
 
 		.ProseMirror ul {
 			padding-inline-start: 2.5rem;
+			margin-block: 0;
 		}
 
 		.ProseMirror li {
@@ -102,21 +103,21 @@
 		}
 
 		.ProseMirror h1 {
-			margin-block-start: 3rem;
+			margin-block-start: 1rem;
 			font-size: var(--font-size-2xl);
 			font-weight: 900;
 		}
 
 		.ProseMirror h2 {
-			margin-block-start: 2rem;
+			margin-block-start: 1rem;
 			font-size: var(--font-size-xl);
 			font-weight: 900;
 		}
 
 		.ProseMirror h3 {
-			margin-block-start: 1.5rem;
+			margin-block-start: 0.75rem;
 			font-size: var(--font-size-lg);
-			font-weight: 900;
+			font-weight: 700;
 		}
 
 		.link-text {
@@ -143,7 +144,7 @@
 
 		h3 .heading-decorator {
 			letter-spacing: -0.05em;
-			font-size: 0.87em;
+			font-size: 0.85em;
 		}
 	}
 </style>

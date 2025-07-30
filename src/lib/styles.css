@@ -34,9 +34,9 @@
     --font-size-xs: calc(11px * var(--font-scale));
     --font-size-sm: calc(13px * var(--font-scale));
     --font-size-base: calc(16px * var(--font-scale));
-    --font-size-lg: calc(20px * var(--font-scale));
-    --font-size-xl: calc(26px * var(--font-scale));
-    --font-size-2xl: calc(32px * var(--font-scale));
+    --font-size-lg: calc(18px * var(--font-scale));
+    --font-size-xl: calc(22px * var(--font-scale));
+    --font-size-2xl: calc(28px * var(--font-scale));
     --font-family: 'Satoshi-Variable', sans-serif;
     /* TODO: Pick a monospace font */
     --font-family-mono: 'Zed Plex Mono', monospace;
