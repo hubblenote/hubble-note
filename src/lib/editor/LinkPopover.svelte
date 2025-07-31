@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { computePosition, shift } from '@floating-ui/dom';
+	import { computePosition, shift, limitShift, flip, offset } from '@floating-ui/dom';
 	import type { EditorState } from 'prosemirror-state';
 	import { createLinkMark, getLinkAttrs } from './schema';
 	import { getSelectedLinkRange } from './plugins/link';
@@ -121,9 +121,29 @@
 			},
 		};
 
+		// Calculate TitleBar height: 12px (traffic light) + 2 * 13px (padding)
+		const titleBarHeight = 38;
+		const horizontalPadding = 16;
+
+		const boundary = {
+			x: horizontalPadding,
+			y: titleBarHeight,
+			width: window.innerWidth - 2 * horizontalPadding,
+			height: window.innerHeight - titleBarHeight,
+		};
+
 		computePosition(virtualElement, popoverEl, {
 			placement: 'top',
-			middleware: [shift()],
+			middleware: [
+				offset(4),
+				flip({
+					boundary,
+				}),
+				shift({
+					boundary,
+					limiter: limitShift(),
+				}),
+			],
 		}).then(({ x, y }) => {
 			if (!popoverEl) return;
 			popoverEl.style.left = `${x}px`;
@@ -202,8 +222,6 @@
 			0 1px 1px 0 rgba(91, 123, 91, 0.24),
 			0 0 1px 0 rgba(91, 123, 91, 0.28);
 		padding-block-end: 2px;
-
-		translate: 0 -4px;
 		z-index: 1;
 	}
 
