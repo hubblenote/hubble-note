@@ -21,9 +21,7 @@
 
 <style>
 	p {
-		--traffic-light-padding: 13px;
-		--traffic-light-height: 12px;
-		height: calc(var(--traffic-light-height) + 2 * var(--traffic-light-padding));
+		height: var(--title-bar-height);
 		display: flex;
 		align-items: center;
 		justify-content: center;

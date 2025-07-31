@@ -67,7 +67,7 @@
 	}
 
 	article {
-		padding-inline: 16px;
+		padding-inline: var(--page-padding);
 		max-width: 65ch;
 		margin-inline: auto;
 	}

@@ -121,9 +121,14 @@
 			},
 		};
 
-		// Calculate TitleBar height: 12px (traffic light) + 2 * 13px (padding)
-		const titleBarHeight = 38;
-		const horizontalPadding = 16;
+		const computedStyle = getComputedStyle(document.documentElement);
+		let titleBarHeight = parseFloat(computedStyle.getPropertyValue('--title-bar-height'));
+		let horizontalPadding = parseFloat(computedStyle.getPropertyValue('--page-padding'));
+
+		if (Number.isNaN(titleBarHeight) || Number.isNaN(horizontalPadding)) {
+			titleBarHeight = 0;
+			horizontalPadding = 0;
+		}
 
 		const boundary = {
 			x: horizontalPadding,

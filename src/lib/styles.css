@@ -43,6 +43,9 @@
 
     --accent-color: #22b561;
     --font-color-primary: #353535;
+
+    --title-bar-height: 38px;
+    --page-padding: 16px;
 }
 
 body {
