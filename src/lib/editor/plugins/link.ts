@@ -6,6 +6,7 @@ import { createToggleMarkCommand } from "../commands/toggle-mark";
 import type { Node } from "prosemirror-model";
 import { createLinkMark, schema } from "../schema";
 import type { Range } from "../types";
+import { maskInlineCode } from "./utils";
 
 export const linkPlugin = new Plugin({
     state: {
@@ -51,11 +52,12 @@ function getBracketMatches(doc: Node): Range[] {
 
     doc.descendants((node, pos) => {
         if (node.inlineContent) {
-            const text = node.textContent;
+            const originalText = node.textContent;
+            const maskedText = maskInlineCode(originalText);
             const regex = /\[([^\[]+)\]/g;
             let match;
 
-            while ((match = regex.exec(text)) !== null) {
+            while ((match = regex.exec(maskedText)) !== null) {
                 const start = pos + 1 + match.index;
                 const end = start + match[0].length;
 
