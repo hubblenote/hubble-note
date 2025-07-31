@@ -38,7 +38,7 @@ function getDecorations(doc: any) {
         const end = start + match[0].length;
 
         decorations.push(
-          Decoration.inline(start, end, {}, { type: 'mark' }),
+          Decoration.inline(start, end, {}, { type: 'formatting' }),
         );
 
         const innerStart = start + 1;
@@ -47,18 +47,18 @@ function getDecorations(doc: any) {
         decorations.push(
           Decoration.inline(innerStart, innerEnd, {
             nodeName: 'u',
-          }, { type: 'text' })
+          }, { type: 'formatting-content' })
         );
 
         decorations.push(
           Decoration.inline(start, innerStart, {
-            class: 'boundary-decorator',
-          }, { type: 'marker' })
+            class: 'formatting-delimiter',
+          }, { type: 'formatting-delimiter' })
         );
         decorations.push(
           Decoration.inline(innerEnd, end, {
-            class: 'boundary-decorator',
-          }, { type: 'marker' })
+            class: 'formatting-delimiter',
+          }, { type: 'formatting-delimiter' })
         );
       }
     }

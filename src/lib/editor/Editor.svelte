@@ -142,7 +142,7 @@
 			visibility: hidden;
 		}
 
-		.boundary-decorator {
+		.formatting-delimiter {
 			color: #cbcbcb;
 			font-weight: 400;
 		}

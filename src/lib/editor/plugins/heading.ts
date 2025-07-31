@@ -37,8 +37,8 @@ function getDecorations(doc: Node) {
             } else {
                 decorations.push(
                     Decoration.inline(textPos, textPos + node.attrs.level, {
-                        class: 'boundary-decorator heading-decorator',
-                    }, { type: 'marker' }),
+                        class: 'formatting-delimiter heading-decorator',
+                    }, { type: 'formatting-delimiter' }),
                 );
             }
             return false;

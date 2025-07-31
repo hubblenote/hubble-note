@@ -2,7 +2,7 @@ import { type Plugin, type Command, TextSelection } from 'prosemirror-state';
 import type { Decoration, DecorationSet } from 'prosemirror-view';
 
 export type MarkDecorationSpec = {
-  type: 'marker' | 'text' | 'mark';
+  type: 'formatting' | 'formatting-delimiter' | 'formatting-content';
 }
 
 // Create command to toggle marks like `**` bold and `_` italic
@@ -21,7 +21,7 @@ export const createToggleMarkCommand = (pluginRef: Plugin, mark: string, closing
     // First, check if the cursor is behind a closing mark.
     // This should move the cursor outside the mark instead of toggling.
     if (selection.empty && selection.from) {
-      const [adjacentDecoration] = decorations.find(selection.from, selection.from, (spec: MarkDecorationSpec) => spec.type === 'marker');
+      const [adjacentDecoration] = decorations.find(selection.from, selection.from, (spec: MarkDecorationSpec) => spec.type === 'formatting-delimiter');
       if (adjacentDecoration?.from === selection.from) {
         tr.setSelection(TextSelection.create(tr.doc, selection.from + closingMark.length));
         dispatch(tr);
@@ -36,8 +36,8 @@ export const createToggleMarkCommand = (pluginRef: Plugin, mark: string, closing
     const from = selection.from - fromOffset;
     const to = selection.to + toOffset;
 
-    const textDecorations = decorations.find(from, to, (spec: MarkDecorationSpec) => spec.type === 'mark');
-    const markerDecorations = decorations.find(from, to, (spec: MarkDecorationSpec) => spec.type === 'marker');
+    const textDecorations = decorations.find(from, to, (spec: MarkDecorationSpec) => spec.type === 'formatting');
+    const markerDecorations = decorations.find(from, to, (spec: MarkDecorationSpec) => spec.type === 'formatting-delimiter');
 
     const shouldApplyMark = checkShouldApplyMark(from, to, textDecorations);
     const firstMarker = textDecorations[0];

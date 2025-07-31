@@ -78,20 +78,20 @@ function getDecorations(doc: Node) {
 
         decorations.push(
             Decoration.inline(match.from, innerStart, {
-                class: 'boundary-decorator',
-            }, { type: 'marker' }),
+                class: 'formatting-delimiter',
+            }, { type: 'formatting-delimiter' }),
         );
 
         decorations.push(
             Decoration.inline(innerEnd, match.to, {
-                class: 'boundary-decorator',
-            }, { type: 'marker' }),
+                class: 'formatting-delimiter',
+            }, { type: 'formatting-delimiter' }),
         );
 
         decorations.push(
             Decoration.inline(innerStart, innerEnd, {
                 class: 'link-text',
-            }, { type: 'text' })
+            }, { type: 'formatting-content' })
         );
     }
 
