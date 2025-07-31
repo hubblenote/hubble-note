@@ -1,7 +1,7 @@
 import { keymap } from "prosemirror-keymap";
 import { Plugin } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
-import { createToggleMarkCommand } from "../commands/toggle-mark";
+import { createToggleFormattingCommand } from "../commands/toggleFormatting";
 import type { Node } from "prosemirror-model";
 
 export const inlineCodePlugin = new Plugin({
@@ -80,5 +80,5 @@ function getDecorations(doc: Node) {
 }
 
 export const inlineCodeKeymapPlugin = keymap({
-    'mod-e': createToggleMarkCommand(inlineCodePlugin, '`'),
+    'mod-e': createToggleFormattingCommand(inlineCodePlugin, '`'),
 })

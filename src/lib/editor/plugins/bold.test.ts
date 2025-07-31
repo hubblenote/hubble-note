@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { EditorState, TextSelection } from 'prosemirror-state';
 import { boldPlugin } from './bold';
 import { schema } from '../schema';
-import { createToggleMarkCommand } from '../commands/toggle-mark';
+import { createToggleFormattingCommand } from '../commands/toggleFormatting';
 
 // Helper function to create editor state with given text and selection
 function createState(text: string, from: number, to: number) {
@@ -24,7 +24,7 @@ function executeCommand(text: string, from: number, to: number) {
   let success = false;
 
   // Execute the command and get the new state
-  const toggleBoldCommand = createToggleMarkCommand(boldPlugin, '**');
+  const toggleBoldCommand = createToggleFormattingCommand(boldPlugin, '**');
   success = toggleBoldCommand(state, (tr) => {
     newState = state.apply(tr);
   });

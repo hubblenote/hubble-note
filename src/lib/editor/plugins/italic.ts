@@ -1,7 +1,7 @@
 import { keymap } from "prosemirror-keymap";
 import { Plugin } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
-import { createToggleMarkCommand } from "../commands/toggle-mark";
+import { createToggleFormattingCommand } from "../commands/toggleFormatting";
 import { maskInlineCode } from "./utils";
 
 export const italicPlugin = new Plugin({
@@ -71,5 +71,5 @@ function getDecorations(doc: any) {
 }
 
 export const italicKeymapPlugin = keymap({
-  'mod-i': createToggleMarkCommand(italicPlugin, '_'),
+  'mod-i': createToggleFormattingCommand(italicPlugin, '_'),
 })

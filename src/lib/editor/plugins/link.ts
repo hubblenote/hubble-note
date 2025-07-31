@@ -2,7 +2,7 @@ import { keymap } from "prosemirror-keymap";
 import { Plugin } from "prosemirror-state";
 import type { Transaction } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
-import { createToggleMarkCommand } from "../commands/toggle-mark";
+import { createToggleFormattingCommand } from "../commands/toggleFormatting";
 import type { Node } from "prosemirror-model";
 import { createLinkMark, schema } from "../schema";
 import type { Range } from "../types";
@@ -123,5 +123,5 @@ function updateMarks(tr: Transaction) {
 }
 
 export const linkKeymapPlugin = keymap({
-    'mod-k': createToggleMarkCommand(linkPlugin, '[', ']'),
+    'mod-k': createToggleFormattingCommand(linkPlugin, '[', ']'),
 })
