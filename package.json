@@ -11,7 +11,8 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"tauri": "tauri",
 		"test:unit": "vitest",
-		"test": "npm run test:unit -- --run"
+		"test": "npm run test:unit -- --run",
+		"format": "prettier --write 'src/**/*.{ts,js,svelte,css,html}'"
 	},
 	"license": "MIT",
 	"dependencies": {
