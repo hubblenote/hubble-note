@@ -6,7 +6,7 @@
 		isEditorFocused,
 	}: { cursorPosition: CursorPosition; isEditorFocused: boolean } = $props();
 	let cursorEl = $state<HTMLSpanElement | null>(null);
-	let isIdle = $state(true);
+	let style: 'blinking' | 'solid' | 'hidden' = $state('hidden');
 
 	$effect(() => {
 		if (cursorEl) {
@@ -19,18 +19,28 @@
 			cursorEl.style.top = `${rect.top - topOffset}px`;
 			cursorEl.style.height = `${height}px`;
 			cursorEl.style.width = `calc(${height * 0.02}px + 0.12rem)`;
-			isIdle = false;
+			style = 'solid';
 			setTimeout(() => {
-				isIdle = true;
+				style = 'blinking';
 			}, 500);
 		}
 	});
 </script>
 
+<svelte:window
+	onblur={() => {
+		style = 'hidden';
+	}}
+	onfocus={() => {
+		style = 'blinking';
+	}}
+/>
+
 <span
 	class="cursor"
 	class:collapsed-into-popover={!isEditorFocused}
-	class:idle={isIdle && isEditorFocused}
+	class:blinking={style === 'blinking' && isEditorFocused}
+	class:hidden={style === 'hidden'}
 	bind:this={cursorEl}
 ></span>
 
@@ -54,8 +64,12 @@
 		z-index: -1;
 	}
 
-	.cursor.idle {
+	.cursor.blinking {
 		animation: blink 1s infinite;
+	}
+
+	.cursor.hidden {
+		opacity: 0;
 	}
 
 	@keyframes blink {
